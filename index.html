@@ -2,226 +2,1307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Adviser OS</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <style>
-    * {
-      box-sizing: border-box;
-    }
+<title>Adviser OS</title>
 
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      color: #17212b;
-    }
+<style>
 
-    header {
-      background: #10252b;
-      color: white;
-      padding: 22px;
-    }
+*{
+  box-sizing:border-box;
+}
 
-    header h1 {
-      margin: 0;
-      font-size: 28px;
-    }
+body{
+  margin:0;
+  font-family:Arial,Helvetica,sans-serif;
+  background:#f4f6f8;
+  color:#17212b;
+}
 
-    header p {
-      margin: 6px 0 0;
-      color: #b9c9cc;
-    }
+.app{
+  display:flex;
+  min-height:100vh;
+}
 
-    .container {
-      max-width: 1200px;
-      margin: auto;
-      padding: 20px;
-    }
+/* SIDEBAR */
 
-    .welcome {
-      margin-bottom: 20px;
-    }
+.sidebar{
+  width:240px;
+  background:#10252b;
+  color:white;
+  padding:22px 15px;
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+}
 
-    .welcome h2 {
-      margin-bottom: 5px;
-    }
+.logo{
+  font-size:24px;
+  font-weight:bold;
+  margin-bottom:5px;
+}
 
-    .dashboard {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-      gap: 15px;
-    }
+.subtitle{
+  font-size:12px;
+  color:#9fb2b7;
+  margin-bottom:25px;
+}
 
-    .card {
-      background: white;
-      border-radius: 14px;
-      padding: 20px;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
-    }
+.menu button{
+  width:100%;
+  border:0;
+  background:transparent;
+  color:#c7d5d8;
+  padding:12px;
+  text-align:left;
+  border-radius:8px;
+  margin-bottom:5px;
+  cursor:pointer;
+}
 
-    .card h3 {
-      margin-top: 0;
-    }
+.menu button:hover,
+.menu button.active{
+  background:#1c4148;
+  color:white;
+}
 
-    .number {
-      font-size: 32px;
-      font-weight: bold;
-      margin: 10px 0;
-      color: #0b6b5e;
-    }
+/* MAIN */
 
-    .section {
-      margin-top: 25px;
-    }
+.main{
+  margin-left:240px;
+  width:calc(100% - 240px);
+  padding:25px;
+}
 
-    .action {
-      background: #0b6b5e;
-      color: white;
-      border: none;
-      padding: 11px 16px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-    }
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:25px;
+}
 
-    .action:hover {
-      background: #095448;
-    }
+.topbar h1{
+  margin:0;
+  font-size:28px;
+}
 
-    .item {
-      border-bottom: 1px solid #e4e8eb;
-      padding: 14px 0;
-    }
+.topbar p{
+  margin:5px 0 0;
+  color:#687482;
+}
 
-    .item:last-child {
-      border-bottom: none;
-    }
+.status{
+  background:#e7f5f1;
+  color:#0b6b5e;
+  padding:8px 12px;
+  border-radius:20px;
+  font-size:12px;
+  font-weight:bold;
+}
 
-    .muted {
-      color: #687482;
-      font-size: 14px;
-    }
+/* CARDS */
 
-    footer {
-      text-align: center;
-      padding: 30px;
-      color: #687482;
-      font-size: 13px;
-    }
-  </style>
+.cards{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:15px;
+}
+
+.card{
+  background:white;
+  border-radius:14px;
+  padding:20px;
+  box-shadow:0 4px 15px rgba(0,0,0,.06);
+}
+
+.card h3{
+  margin-top:0;
+}
+
+.label{
+  color:#687482;
+  font-size:13px;
+}
+
+.number{
+  font-size:30px;
+  font-weight:bold;
+  color:#0b6b5e;
+  margin:8px 0;
+}
+
+/* SECTIONS */
+
+.section{
+  margin-top:20px;
+}
+
+.section-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+.item{
+  padding:15px 0;
+  border-bottom:1px solid #e4e8eb;
+}
+
+.item:last-child{
+  border-bottom:none;
+}
+
+.item h4{
+  margin:0 0 5px;
+}
+
+.muted{
+  color:#687482;
+  font-size:13px;
+  line-height:1.5;
+}
+
+.button{
+  background:#0b6b5e;
+  color:white;
+  border:none;
+  padding:10px 14px;
+  border-radius:8px;
+  cursor:pointer;
+  font-weight:bold;
+}
+
+.button:hover{
+  background:#095448;
+}
+
+.secondary{
+  background:white;
+  border:1px solid #dce2e6;
+  color:#17212b;
+}
+
+/* SCREENS */
+
+.screen{
+  display:none;
+}
+
+.screen.active{
+  display:block;
+}
+
+/* TABLE */
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+th,
+td{
+  padding:12px;
+  border-bottom:1px solid #e4e8eb;
+  text-align:left;
+  font-size:13px;
+}
+
+th{
+  color:#687482;
+}
+
+/* PRODUCT */
+
+.product{
+  border:1px solid #e1e6e9;
+  padding:15px;
+  border-radius:10px;
+  margin-bottom:10px;
+}
+
+.product strong{
+  display:block;
+  margin-bottom:5px;
+}
+
+/* FORMS */
+
+input,
+select,
+textarea{
+  width:100%;
+  padding:11px;
+  border:1px solid #dce2e6;
+  border-radius:8px;
+  margin-top:6px;
+  margin-bottom:12px;
+}
+
+textarea{
+  min-height:100px;
+}
+
+/* BADGES */
+
+.badge{
+  display:inline-block;
+  padding:5px 8px;
+  border-radius:15px;
+  background:#eef2f4;
+  font-size:11px;
+  margin-right:5px;
+}
+
+/* MOBILE */
+
+@media(max-width:900px){
+
+  .sidebar{
+    width:190px;
+  }
+
+  .main{
+    margin-left:190px;
+    width:calc(100% - 190px);
+  }
+
+  .cards{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+}
+
+@media(max-width:650px){
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
+
+  .app{
+    display:block;
+  }
+
+  .main{
+    margin-left:0;
+    width:100%;
+    padding:15px;
+  }
+
+  .cards{
+    grid-template-columns:1fr;
+  }
+
+  .section-grid{
+    grid-template-columns:1fr;
+  }
+
+}
+
+</style>
 </head>
 
 <body>
 
-<header>
-  <h1>Adviser OS</h1>
-  <p>Your AI-powered financial adviser operating system</p>
-</header>
+<div class="app">
 
-<div class="container">
+<!-- SIDEBAR -->
 
-  <div class="welcome">
-    <h2>Command Centre</h2>
-    <p class="muted">
-      Your sales, prospects, products and intelligence — in one place.
-    </p>
-  </div>
+<aside class="sidebar">
 
-  <div class="dashboard">
+<div class="logo">Adviser OS</div>
 
-    <div class="card">
-      <h3>Cycle Target</h3>
-      <div class="number">13</div>
-      <div class="muted">Sales required</div>
-    </div>
+<div class="subtitle">
+AI Sales Operating System
+</div>
 
-    <div class="card">
-      <h3>Sales</h3>
-      <div class="number">1</div>
-      <div class="muted">Completed this cycle</div>
-    </div>
+<div class="menu">
 
-    <div class="card">
-      <h3>Prospects</h3>
-      <div class="number">24</div>
-      <div class="muted">Active prospects</div>
-    </div>
+<button class="active" onclick="showScreen('dashboard',this)">
+🏠 Command Centre
+</button>
 
-    <div class="card">
-      <h3>Hot Leads</h3>
-      <div class="number">5</div>
-      <div class="muted">Need attention</div>
-    </div>
+<button onclick="showScreen('brief',this)">
+📰 Morning Brief
+</button>
 
-  </div>
+<button onclick="showScreen('prospects',this)">
+👥 Prospects
+</button>
 
-  <div class="section">
+<button onclick="showScreen('pipeline',this)">
+📊 Pipeline
+</button>
 
-    <div class="card">
+<button onclick="showScreen('products',this)">
+🧩 Product Intelligence
+</button>
 
-      <h3>Today's Action Plan</h3>
+<button onclick="showScreen('clients',this)">
+👤 Client Workspace
+</button>
 
-      <div class="item">
-        <strong>Follow up hot prospects</strong>
-        <p class="muted">
-          Prioritise prospects with appointments, strong needs or recent engagement.
-        </p>
-        <button class="action" onclick="alert('Prospect queue coming in V0.2')">
-          Open Prospect Queue
-        </button>
-      </div>
+<button onclick="showScreen('territory',this)">
+📍 Territory
+</button>
 
-      <div class="item">
-        <strong>Product Intelligence</strong>
-        <p class="muted">
-          Find possible connections between client needs and your products.
-        </p>
-        <button class="action" onclick="alert('Product Intelligence coming next')">
-          Explore Products
-        </button>
-      </div>
+<button onclick="showScreen('ideas',this)">
+💡 Ideas Lab
+</button>
 
-      <div class="item">
-        <strong>Industry Intelligence</strong>
-        <p class="muted">
-          Current financial-services news and developments will appear here.
-        </p>
-        <button class="action" onclick="alert('Live industry intelligence coming soon')">
-          View Intelligence
-        </button>
-      </div>
-
-    </div>
-
-  </div>
-
-  <div class="section">
-
-    <div class="card">
-
-      <h3>Adviser OS Vision</h3>
-
-      <p class="muted">
-        Adviser OS will bring together your prospects, clients, products,
-        industry intelligence, sales activity and AI assistance.
-      </p>
-
-      <p class="muted">
-        The system will be designed so that new products, tools and ideas
-        can be added without rebuilding the entire application.
-      </p>
-
-    </div>
-
-  </div>
+<button onclick="showScreen('settings',this)">
+⚙️ Settings
+</button>
 
 </div>
 
-<footer>
-  Adviser OS V0.1 — Prototype
-</footer>
+</aside>
+
+
+<!-- MAIN -->
+
+<main class="main">
+
+
+<!-- DASHBOARD -->
+
+<section id="dashboard" class="screen active">
+
+<div class="topbar">
+
+<div>
+
+<h1>Command Centre</h1>
+
+<p>
+Your adviser activity at a glance.
+</p>
+
+</div>
+
+<div class="status">
+● Prototype Online
+</div>
+
+</div>
+
+
+<div class="cards">
+
+<div class="card">
+
+<div class="label">
+Cycle Target
+</div>
+
+<div class="number">
+13
+</div>
+
+<div class="muted">
+Sales required
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="label">
+Sales
+</div>
+
+<div class="number">
+1
+</div>
+
+<div class="muted">
+Completed this cycle
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="label">
+Active Prospects
+</div>
+
+<div class="number">
+24
+</div>
+
+<div class="muted">
+Prospects in pipeline
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="label">
+Hot Leads
+</div>
+
+<div class="number">
+5
+</div>
+
+<div class="muted">
+Require attention
+</div>
+
+</div>
+
+</div>
+
+
+<div class="section">
+
+<div class="section-grid">
+
+<div class="card">
+
+<h3>
+Today's Action Plan
+</h3>
+
+<div class="item">
+
+<h4>
+Follow up hot prospects
+</h4>
+
+<div class="muted">
+Prioritise prospects with appointments,
+strong needs or recent engagement.
+</div>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+New prospecting
+</h4>
+
+<div class="muted">
+Build new conversations with your selected
+prospecting segments.
+</div>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Product opportunities
+</h4>
+
+<div class="muted">
+Review client needs for legitimate
+product intersections.
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Quick Actions
+</h3>
+
+<button class="button"
+onclick="showScreen('prospects',document.querySelectorAll('.menu button')[2])">
+
++ New Prospect
+
+</button>
+
+<br><br>
+
+<button class="button secondary"
+onclick="showScreen('clients',document.querySelectorAll('.menu button')[5])">
+
++ Client Discovery
+
+</button>
+
+<br><br>
+
+<button class="button secondary"
+onclick="showScreen('products',document.querySelectorAll('.menu button')[4])">
+
+Product Intelligence
+
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="section">
+
+<div class="card">
+
+<h3>
+Adviser OS Intelligence
+</h3>
+
+<p class="muted">
+
+The future system will combine your client information,
+product knowledge, industry intelligence and sales activity
+to help you decide what deserves your attention next.
+
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- MORNING BRIEF -->
+
+<section id="brief" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Morning Brief</h1>
+
+<p>
+Industry intelligence for your day.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Today's Intelligence
+</h3>
+
+<div class="item">
+
+<h4>
+Financial Services News
+</h4>
+
+<p class="muted">
+Live South African financial-services news will
+appear here once the news intelligence layer is connected.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Regulatory Watch
+</h4>
+
+<p class="muted">
+Important regulatory developments can be monitored
+and summarised here.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Why It Matters
+</h4>
+
+<p class="muted">
+Adviser OS will convert important developments into
+practical conversation opportunities.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PROSPECTS -->
+
+<section id="prospects" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Prospects</h1>
+
+<p>
+Manage your prospecting activity.
+</p>
+
+</div>
+
+<button class="button"
+onclick="alert('New prospect form will be connected to Supabase.')">
+
++ New Prospect
+
+</button>
+
+</div>
+
+
+<div class="card">
+
+<input
+type="text"
+placeholder="Search prospects..."
+>
+
+
+<table>
+
+<thead>
+
+<tr>
+
+<th>Name</th>
+<th>Segment</th>
+<th>Interest</th>
+<th>Status</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<tr>
+
+<td>Thono</td>
+<td>Public Sector</td>
+<td>Protection</td>
+<td><span class="badge">Hot</span></td>
+
+</tr>
+
+<tr>
+
+<td>BP Unit 15</td>
+<td>Business</td>
+<td>Multiple</td>
+<td><span class="badge">Follow Up</span></td>
+
+</tr>
+
+<tr>
+
+<td>Social Workers</td>
+<td>Professional</td>
+<td>Medical</td>
+<td><span class="badge">Appointment</span></td>
+
+</tr>
+
+<tr>
+
+<td>Kgosietsile</td>
+<td>Individual</td>
+<td>Essential Med</td>
+<td><span class="badge">Active</span></td>
+
+</tr>
+
+</tbody>
+
+</table>
+
+</div>
+
+</section>
+
+
+<!-- PIPELINE -->
+
+<section id="pipeline" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Pipeline</h1>
+
+<p>
+Track every opportunity from contact to outcome.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<div class="item">
+
+<h4>
+New
+</h4>
+
+<p class="muted">
+Newly identified prospects.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Contacted
+</h4>
+
+<p class="muted">
+Prospects you have spoken to.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Appointment
+</h4>
+
+<p class="muted">
+Meetings and consultations.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Proposal
+</h4>
+
+<p class="muted">
+Product discussion or quotation stage.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Won
+</h4>
+
+<p class="muted">
+Completed business.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- PRODUCTS -->
+
+<section id="products" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Product Intelligence</h1>
+
+<p>
+Your product knowledge base.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Products
+</h3>
+
+
+<div class="product">
+
+<strong>
+Funeral Cover
+</strong>
+
+<span class="muted">
+Benefits, eligibility, exclusions,
+pricing and approved information.
+</span>
+
+</div>
+
+
+<div class="product">
+
+<strong>
+Life Cover
+</strong>
+
+<span class="muted">
+Protection needs, affordability and
+client discovery information.
+</span>
+
+</div>
+
+
+<div class="product">
+
+<strong>
+Investments
+</strong>
+
+<span class="muted">
+Goals, time horizon, contributions and
+investment objectives.
+</span>
+
+</div>
+
+
+<div class="product">
+
+<strong>
+Essential Med
+</strong>
+
+<span class="muted">
+Medical protection information and
+discovery questions.
+</span>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- CLIENTS -->
+
+<section id="clients" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Client Workspace</h1>
+
+<p>
+Structured client discovery.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Client Discovery
+</h3>
+
+
+<label>
+Client Name
+</label>
+
+<input
+type="text"
+placeholder="Enter client name"
+>
+
+
+<label>
+Main Financial Objective
+</label>
+
+<select>
+
+<option>
+Select objective
+</option>
+
+<option>
+Family Protection
+</option>
+
+<option>
+Income Protection
+</option>
+
+<option>
+Investment
+</option>
+
+<option>
+Medical Protection
+</option>
+
+</select>
+
+
+<label>
+Discovery Notes
+</label>
+
+<textarea
+placeholder="Capture important client information..."
+></textarea>
+
+
+<button class="button"
+onclick="alert('Client workspace will connect to Supabase.')">
+
+Save Discovery
+
+</button>
+
+</div>
+
+</section>
+
+
+<!-- TERRITORY -->
+
+<section id="territory" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Territory</h1>
+
+<p>
+Prospecting intelligence by area.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="cards">
+
+<div class="card">
+
+<h3>
+Mahikeng / Mmabatho
+</h3>
+
+<div class="number">
+Primary
+</div>
+
+<p class="muted">
+Core prospecting territory.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Zeerust
+</h3>
+
+<div class="number">
+Expansion
+</div>
+
+<p class="muted">
+Potential secondary territory.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Business Owners
+</h3>
+
+<div class="number">
+Priority
+</div>
+
+<p class="muted">
+High-value prospect segment.
+</p>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Professionals
+</h3>
+
+<div class="number">
+Priority
+</div>
+
+<p class="muted">
+Potential appointment segment.
+</p>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- IDEAS -->
+
+<section id="ideas" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Ideas Lab</h1>
+
+<p>
+New ideas become future Adviser OS modules.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Expandable Modules
+</h3>
+
+
+<div class="item">
+
+<h4>
+Commission Planner
+</h4>
+
+<p class="muted">
+Calculate production, premiums and
+commission using configurable product rules.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+AI Conversation Coach
+</h4>
+
+<p class="muted">
+Prepare for prospect conversations and
+follow-ups.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Learning Coach
+</h4>
+
+<p class="muted">
+Turn industry developments and activity
+into adviser learning.
+</p>
+
+</div>
+
+
+<div class="item">
+
+<h4>
+Regulatory Watch
+</h4>
+
+<p class="muted">
+Monitor important financial-services developments.
+</p>
+
+</div>
+
+
+</div>
+
+</section>
+
+
+<!-- SETTINGS -->
+
+<section id="settings" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Settings</h1>
+
+<p>
+Configure your Adviser OS.
+</p>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h3>
+Adviser Settings
+</h3>
+
+
+<label>
+Sales Cycle Target
+</label>
+
+<input
+type="number"
+value="13"
+>
+
+
+<label>
+Working Start Time
+</label>
+
+<input
+type="time"
+value="08:00"
+>
+
+
+<label>
+Working End Time
+</label>
+
+<input
+type="time"
+value="14:00"
+>
+
+
+<label>
+Primary Territory
+</label>
+
+<input
+type="text"
+value="Mahikeng / Mmabatho"
+>
+
+
+<button class="button"
+onclick="alert('Settings will become live after Supabase is connected.')">
+
+Save Settings
+
+</button>
+
+</div>
+
+</section>
+
+
+</main>
+
+</div>
+
+
+<script>
+
+function showScreen(id,button){
+
+  document
+  .querySelectorAll('.screen')
+  .forEach(screen=>{
+    screen.classList.remove('active');
+  });
+
+  document
+  .getElementById(id)
+  .classList.add('active');
+
+
+  document
+  .querySelectorAll('.menu button')
+  .forEach(btn=>{
+    btn.classList.remove('active');
+  });
+
+
+  if(button){
+    button.classList.add('active');
+  }
+
+  window.scrollTo({
+    top:0,
+    behavior:'smooth'
+  });
+
+}
+
+</script>
 
 </body>
 </html>
