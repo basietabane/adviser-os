@@ -1,6 +1,6 @@
 // ============================================================
 // ADVISER OS — APPLICATION ENGINE
-// Version 1.2
+// Version 1.3
 // ============================================================
 
 console.log("Adviser OS app.js loading...");
@@ -66,15 +66,15 @@ const AdviserOS = {
 
   products: [],
 
+  productIntersections: [],
+
   ideas: [],
 
   news: [],
 
   activities: [],
 
-  appointments: [],
-
-  productIntersections: []
+  appointments: []
 
 };
 
@@ -92,17 +92,10 @@ function updateConnectionDisplay() {
 
   statusElements.forEach(element => {
 
-    if (AdviserOS.connected) {
-
-      element.textContent =
-        "● Supabase Connected";
-
-    } else {
-
-      element.textContent =
-        "● Prototype Online";
-
-    }
+    element.textContent =
+      AdviserOS.connected
+        ? "● Supabase Connected"
+        : "● Prototype Online";
 
   });
 
@@ -117,23 +110,21 @@ async function checkSupabaseConnection() {
 
   if (!supabaseClient) {
 
-    console.warn(
-      "Adviser OS: Supabase client not available."
-    );
-
     AdviserOS.connected = false;
 
     updateConnectionDisplay();
 
     return false;
+
   }
 
   try {
 
-    const { error } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .limit(1);
+    const { error } =
+      await supabaseClient
+        .from("profiles")
+        .select("*")
+        .limit(1);
 
     if (error) {
 
@@ -147,15 +138,16 @@ async function checkSupabaseConnection() {
       updateConnectionDisplay();
 
       return false;
+
     }
 
     AdviserOS.connected = true;
 
+    updateConnectionDisplay();
+
     console.log(
       "Adviser OS: Supabase database connected."
     );
-
-    updateConnectionDisplay();
 
     return true;
 
@@ -171,6 +163,7 @@ async function checkSupabaseConnection() {
     updateConnectionDisplay();
 
     return false;
+
   }
 
 }
@@ -195,11 +188,12 @@ async function loadAdviser() {
     if (error) {
 
       console.error(
-        "Adviser OS: Could not load adviser:",
+        "Adviser OS: Adviser loading failed:",
         error.message
       );
 
       return;
+
     }
 
     if (data && data.length > 0) {
@@ -222,7 +216,7 @@ async function loadAdviser() {
         Number(adviser.target_sales) || 13;
 
       console.log(
-        "Adviser OS: Adviser loaded:",
+        "Adviser loaded:",
         AdviserOS.adviser.name
       );
 
@@ -258,20 +252,21 @@ async function loadProspects() {
     if (error) {
 
       console.error(
-        "Adviser OS: Could not load prospects:",
+        "Adviser OS: Prospect loading failed:",
         error.message
       );
 
       AdviserOS.prospects = [];
 
       return;
+
     }
 
     AdviserOS.prospects =
       data || [];
 
     console.log(
-      "Adviser OS: Prospects loaded:",
+      "Prospects loaded:",
       AdviserOS.prospects.length
     );
 
@@ -282,15 +277,13 @@ async function loadProspects() {
       error
     );
 
-    AdviserOS.prospects = [];
-
   }
 
 }
 
 
 // ------------------------------------------------------------
-// LOAD PRODUCTS + PRODUCT INTELLIGENCE
+// LOAD PRODUCTS
 // ------------------------------------------------------------
 
 async function loadProducts() {
@@ -309,50 +302,23 @@ async function loadProducts() {
     if (error) {
 
       console.error(
-        "Adviser OS: Could not load products:",
+        "Adviser OS: Product loading failed:",
         error.message
       );
 
       AdviserOS.products = [];
 
       return;
+
     }
 
     AdviserOS.products =
       data || [];
 
     console.log(
-      "Adviser OS: Products loaded:",
+      "Products loaded:",
       AdviserOS.products.length
     );
-
-
-    // --------------------------------------------------------
-    // PRODUCT INTELLIGENCE CHECK
-    // --------------------------------------------------------
-
-    AdviserOS.products.forEach(product => {
-
-      console.log(
-        "Product Intelligence:",
-        {
-          name: product.name,
-          category: product.category,
-          provider: product.provider,
-          idealClient: product.ideal_client,
-          benefits: product.key_benefits,
-          discoveryQuestions: product.discovery_questions,
-          objections: product.common_objections,
-          salesNotes: product.sales_notes
-        }
-      );
-
-    });
-
-
-    // Prepare the intersection engine
-
-    buildProductIntersections();
 
   } catch (error) {
 
@@ -369,73 +335,115 @@ async function loadProducts() {
 
 
 // ------------------------------------------------------------
-// PRODUCT INTERSECTION ENGINE
+// LOAD PRODUCT INTERSECTIONS
 // ------------------------------------------------------------
 
-function buildProductIntersections() {
+async function loadProductIntersections() {
 
-  AdviserOS.productIntersections = [];
+  if (!supabaseClient) return;
 
-  const products =
-    AdviserOS.products;
+  try {
 
-  if (products.length < 2) {
+    const { data, error } =
+      await supabaseClient
+        .from("product_intersections")
+        .select("*")
+        .eq("active", true);
 
-    console.log(
-      "Adviser OS: Not enough products for intersections."
-    );
+    if (error) {
 
-    return;
-  }
+      console.error(
+        "Adviser OS: Product intersection loading failed:",
+        error.message
+      );
 
+      AdviserOS.productIntersections = [];
 
-  for (
-    let i = 0;
-    i < products.length;
-    i++
-  ) {
-
-    for (
-      let j = i + 1;
-      j < products.length;
-      j++
-    ) {
-
-      const productA =
-        products[i];
-
-      const productB =
-        products[j];
-
-
-      AdviserOS.productIntersections.push({
-
-        productA: productA.name,
-
-        productB: productB.name,
-
-        categoryA: productA.category,
-
-        categoryB: productB.category,
-
-        description:
-          productA.name +
-          " + " +
-          productB.name,
-
-        status: "Potential Opportunity"
-
-      });
+      return;
 
     }
 
+    AdviserOS.productIntersections =
+      data || [];
+
+    console.log(
+      "Product intersections loaded:",
+      AdviserOS.productIntersections.length
+    );
+
+
+    // --------------------------------------------------------
+    // CONNECT PRODUCT NAMES TO INTERSECTIONS
+    // --------------------------------------------------------
+
+    AdviserOS.productIntersections =
+      AdviserOS.productIntersections.map(
+        intersection => {
+
+          const productA =
+            AdviserOS.products.find(
+              product =>
+                product.id ===
+                intersection.product_a_id
+            );
+
+          const productB =
+            AdviserOS.products.find(
+              product =>
+                product.id ===
+                intersection.product_b_id
+            );
+
+          return {
+
+            ...intersection,
+
+            productAName:
+              productA
+                ? productA.name
+                : "Unknown Product",
+
+            productBName:
+              productB
+                ? productB.name
+                : "Unknown Product"
+
+          };
+
+        }
+      );
+
+
+    console.log(
+      "Adviser OS: Product intersections linked to products."
+    );
+
+
+    AdviserOS.productIntersections.forEach(
+      intersection => {
+
+        console.log(
+          "Intersection:",
+          intersection.productAName,
+          "+",
+          intersection.productBName,
+          "|",
+          intersection.relationship_type
+        );
+
+      }
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Adviser OS: Product intersection loading failed.",
+      error
+    );
+
+    AdviserOS.productIntersections = [];
+
   }
-
-
-  console.log(
-    "Adviser OS: Product intersections generated:",
-    AdviserOS.productIntersections.length
-  );
 
 }
 
@@ -458,29 +466,20 @@ async function loadActivities() {
     if (error) {
 
       console.warn(
-        "Adviser OS: Activities could not be loaded:",
+        "Activities could not be loaded:",
         error.message
       );
 
       AdviserOS.activities = [];
 
       return;
+
     }
 
     AdviserOS.activities =
       data || [];
 
-    console.log(
-      "Adviser OS: Activities loaded:",
-      AdviserOS.activities.length
-    );
-
   } catch (error) {
-
-    console.warn(
-      "Adviser OS: Activity loading failed.",
-      error
-    );
 
     AdviserOS.activities = [];
 
@@ -507,29 +506,20 @@ async function loadAppointments() {
     if (error) {
 
       console.warn(
-        "Adviser OS: Appointments could not be loaded:",
+        "Appointments could not be loaded:",
         error.message
       );
 
       AdviserOS.appointments = [];
 
       return;
+
     }
 
     AdviserOS.appointments =
       data || [];
 
-    console.log(
-      "Adviser OS: Appointments loaded:",
-      AdviserOS.appointments.length
-    );
-
   } catch (error) {
-
-    console.warn(
-      "Adviser OS: Appointment loading failed.",
-      error
-    );
 
     AdviserOS.appointments = [];
 
@@ -556,34 +546,23 @@ async function loadSales() {
     if (error) {
 
       console.warn(
-        "Adviser OS: Sales could not be loaded:",
+        "Sales could not be loaded:",
         error.message
       );
 
-      AdviserOS.adviser.sales = 0;
-
       return;
+
     }
 
-    const sales =
-      data || [];
-
     AdviserOS.adviser.sales =
-      sales.length;
-
-    console.log(
-      "Adviser OS: Sales loaded:",
-      sales.length
-    );
+      (data || []).length;
 
   } catch (error) {
 
     console.warn(
-      "Adviser OS: Sales loading failed.",
+      "Sales loading failed.",
       error
     );
-
-    AdviserOS.adviser.sales = 0;
 
   }
 
@@ -668,6 +647,41 @@ function updateCommandCentre() {
 
 
 // ------------------------------------------------------------
+// PRODUCT INTELLIGENCE HELPER
+// ------------------------------------------------------------
+
+function getProductByName(name) {
+
+  return AdviserOS.products.find(
+    product =>
+      product.name.toLowerCase() ===
+      name.toLowerCase()
+  ) || null;
+
+}
+
+
+// ------------------------------------------------------------
+// FIND PRODUCT INTERSECTIONS
+// ------------------------------------------------------------
+
+function getProductIntersections(productName) {
+
+  return AdviserOS.productIntersections.filter(
+    intersection => {
+
+      return (
+        intersection.productAName === productName ||
+        intersection.productBName === productName
+      );
+
+    }
+  );
+
+}
+
+
+// ------------------------------------------------------------
 // SCREEN NAVIGATION
 // ------------------------------------------------------------
 
@@ -684,6 +698,7 @@ function navigateTo(screenId) {
     );
 
     return;
+
   }
 
   document
@@ -745,6 +760,12 @@ async function refreshAdviserOSData() {
 
   await loadProducts();
 
+  // Important:
+  // Products must load BEFORE intersections
+  // because intersections use product IDs.
+
+  await loadProductIntersections();
+
   await loadActivities();
 
   await loadAppointments();
@@ -754,7 +775,7 @@ async function refreshAdviserOSData() {
   updateCommandCentre();
 
   console.log(
-    "Adviser OS: Database data refreshed."
+    "Adviser OS: Database refresh complete."
   );
 
 }
@@ -851,6 +872,12 @@ window.productIntelligence =
 
 window.refreshAdviserOSData =
   refreshAdviserOSData;
+
+window.getProductByName =
+  getProductByName;
+
+window.getProductIntersections =
+  getProductIntersections;
 
 
 // ------------------------------------------------------------
