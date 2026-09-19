@@ -1,0 +1,228 @@
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Adviser OS</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #17212b;
+    }
+
+    header {
+      background: #10252b;
+      color: white;
+      padding: 22px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      color: #b9c9cc;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: auto;
+      padding: 20px;
+    }
+
+    .welcome {
+      margin-bottom: 20px;
+    }
+
+    .welcome h2 {
+      margin-bottom: 5px;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.06);
+    }
+
+    .card h3 {
+      margin-top: 0;
+    }
+
+    .number {
+      font-size: 32px;
+      font-weight: bold;
+      margin: 10px 0;
+      color: #0b6b5e;
+    }
+
+    .section {
+      margin-top: 25px;
+    }
+
+    .action {
+      background: #0b6b5e;
+      color: white;
+      border: none;
+      padding: 11px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .action:hover {
+      background: #095448;
+    }
+
+    .item {
+      border-bottom: 1px solid #e4e8eb;
+      padding: 14px 0;
+    }
+
+    .item:last-child {
+      border-bottom: none;
+    }
+
+    .muted {
+      color: #687482;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      padding: 30px;
+      color: #687482;
+      font-size: 13px;
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <h1>Adviser OS</h1>
+  <p>Your AI-powered financial adviser operating system</p>
+</header>
+
+<div class="container">
+
+  <div class="welcome">
+    <h2>Command Centre</h2>
+    <p class="muted">
+      Your sales, prospects, products and intelligence — in one place.
+    </p>
+  </div>
+
+  <div class="dashboard">
+
+    <div class="card">
+      <h3>Cycle Target</h3>
+      <div class="number">13</div>
+      <div class="muted">Sales required</div>
+    </div>
+
+    <div class="card">
+      <h3>Sales</h3>
+      <div class="number">1</div>
+      <div class="muted">Completed this cycle</div>
+    </div>
+
+    <div class="card">
+      <h3>Prospects</h3>
+      <div class="number">24</div>
+      <div class="muted">Active prospects</div>
+    </div>
+
+    <div class="card">
+      <h3>Hot Leads</h3>
+      <div class="number">5</div>
+      <div class="muted">Need attention</div>
+    </div>
+
+  </div>
+
+  <div class="section">
+
+    <div class="card">
+
+      <h3>Today's Action Plan</h3>
+
+      <div class="item">
+        <strong>Follow up hot prospects</strong>
+        <p class="muted">
+          Prioritise prospects with appointments, strong needs or recent engagement.
+        </p>
+        <button class="action" onclick="alert('Prospect queue coming in V0.2')">
+          Open Prospect Queue
+        </button>
+      </div>
+
+      <div class="item">
+        <strong>Product Intelligence</strong>
+        <p class="muted">
+          Find possible connections between client needs and your products.
+        </p>
+        <button class="action" onclick="alert('Product Intelligence coming next')">
+          Explore Products
+        </button>
+      </div>
+
+      <div class="item">
+        <strong>Industry Intelligence</strong>
+        <p class="muted">
+          Current financial-services news and developments will appear here.
+        </p>
+        <button class="action" onclick="alert('Live industry intelligence coming soon')">
+          View Intelligence
+        </button>
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="section">
+
+    <div class="card">
+
+      <h3>Adviser OS Vision</h3>
+
+      <p class="muted">
+        Adviser OS will bring together your prospects, clients, products,
+        industry intelligence, sales activity and AI assistance.
+      </p>
+
+      <p class="muted">
+        The system will be designed so that new products, tools and ideas
+        can be added without rebuilding the entire application.
+      </p>
+
+    </div>
+
+  </div>
+
+</div>
+
+<footer>
+  Adviser OS V0.1 — Prototype
+</footer>
+
+</body>
+</html>
+```
