@@ -76,38 +76,33 @@ const AdviserOS = {
 async function checkSupabaseConnection() {
 
   if (!supabaseClient) {
-
-    console.warn(
-      "Adviser OS: No Supabase client available."
-    );
-
+    console.warn("Adviser OS: Supabase client not available.");
+    AdviserOS.connected = false;
     return false;
   }
 
   try {
 
-    const { data, error } =
-      await supabaseClient
-        .from("profiles")
-        .select("*")
-        .limit(1);
+    const { error } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .limit(1);
 
     if (error) {
-
-      console.warn(
-        "Adviser OS: Supabase responded, but the profiles table could not be read.",
+      console.error(
+        "Adviser OS: Supabase test failed:",
         error.message
       );
 
       AdviserOS.connected = false;
-
+      updateConnectionDisplay();
       return false;
     }
 
     AdviserOS.connected = true;
 
     console.log(
-      "Adviser OS: Supabase database is reachable."
+      "Adviser OS: Supabase database connected."
     );
 
     updateConnectionDisplay();
@@ -122,6 +117,7 @@ async function checkSupabaseConnection() {
     );
 
     AdviserOS.connected = false;
+    updateConnectionDisplay();
 
     return false;
   }
