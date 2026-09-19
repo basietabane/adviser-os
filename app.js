@@ -1,6 +1,6 @@
 // ============================================================
 // ADVISER OS — APPLICATION ENGINE
-// Version 1.1
+// Version 1.2
 // ============================================================
 
 console.log("Adviser OS app.js loading...");
@@ -72,7 +72,9 @@ const AdviserOS = {
 
   activities: [],
 
-  appointments: []
+  appointments: [],
+
+  productIntersections: []
 
 };
 
@@ -184,10 +186,11 @@ async function loadAdviser() {
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("advisers")
-      .select("*")
-      .limit(1);
+    const { data, error } =
+      await supabaseClient
+        .from("advisers")
+        .select("*")
+        .limit(1);
 
     if (error) {
 
@@ -247,9 +250,10 @@ async function loadProspects() {
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("prospects")
-      .select("*");
+    const { data, error } =
+      await supabaseClient
+        .from("prospects")
+        .select("*");
 
     if (error) {
 
@@ -263,7 +267,8 @@ async function loadProspects() {
       return;
     }
 
-    AdviserOS.prospects = data || [];
+    AdviserOS.prospects =
+      data || [];
 
     console.log(
       "Adviser OS: Prospects loaded:",
@@ -285,7 +290,7 @@ async function loadProspects() {
 
 
 // ------------------------------------------------------------
-// LOAD PRODUCTS
+// LOAD PRODUCTS + PRODUCT INTELLIGENCE
 // ------------------------------------------------------------
 
 async function loadProducts() {
@@ -294,9 +299,12 @@ async function loadProducts() {
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("products")
-      .select("*");
+    const { data, error } =
+      await supabaseClient
+        .from("products")
+        .select("*")
+        .eq("active", true)
+        .order("name");
 
     if (error) {
 
@@ -310,12 +318,41 @@ async function loadProducts() {
       return;
     }
 
-    AdviserOS.products = data || [];
+    AdviserOS.products =
+      data || [];
 
     console.log(
       "Adviser OS: Products loaded:",
       AdviserOS.products.length
     );
+
+
+    // --------------------------------------------------------
+    // PRODUCT INTELLIGENCE CHECK
+    // --------------------------------------------------------
+
+    AdviserOS.products.forEach(product => {
+
+      console.log(
+        "Product Intelligence:",
+        {
+          name: product.name,
+          category: product.category,
+          provider: product.provider,
+          idealClient: product.ideal_client,
+          benefits: product.key_benefits,
+          discoveryQuestions: product.discovery_questions,
+          objections: product.common_objections,
+          salesNotes: product.sales_notes
+        }
+      );
+
+    });
+
+
+    // Prepare the intersection engine
+
+    buildProductIntersections();
 
   } catch (error) {
 
@@ -332,6 +369,78 @@ async function loadProducts() {
 
 
 // ------------------------------------------------------------
+// PRODUCT INTERSECTION ENGINE
+// ------------------------------------------------------------
+
+function buildProductIntersections() {
+
+  AdviserOS.productIntersections = [];
+
+  const products =
+    AdviserOS.products;
+
+  if (products.length < 2) {
+
+    console.log(
+      "Adviser OS: Not enough products for intersections."
+    );
+
+    return;
+  }
+
+
+  for (
+    let i = 0;
+    i < products.length;
+    i++
+  ) {
+
+    for (
+      let j = i + 1;
+      j < products.length;
+      j++
+    ) {
+
+      const productA =
+        products[i];
+
+      const productB =
+        products[j];
+
+
+      AdviserOS.productIntersections.push({
+
+        productA: productA.name,
+
+        productB: productB.name,
+
+        categoryA: productA.category,
+
+        categoryB: productB.category,
+
+        description:
+          productA.name +
+          " + " +
+          productB.name,
+
+        status: "Potential Opportunity"
+
+      });
+
+    }
+
+  }
+
+
+  console.log(
+    "Adviser OS: Product intersections generated:",
+    AdviserOS.productIntersections.length
+  );
+
+}
+
+
+// ------------------------------------------------------------
 // LOAD ACTIVITIES
 // ------------------------------------------------------------
 
@@ -341,9 +450,10 @@ async function loadActivities() {
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("activities")
-      .select("*");
+    const { data, error } =
+      await supabaseClient
+        .from("activities")
+        .select("*");
 
     if (error) {
 
@@ -357,7 +467,8 @@ async function loadActivities() {
       return;
     }
 
-    AdviserOS.activities = data || [];
+    AdviserOS.activities =
+      data || [];
 
     console.log(
       "Adviser OS: Activities loaded:",
@@ -388,9 +499,10 @@ async function loadAppointments() {
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("appointments")
-      .select("*");
+    const { data, error } =
+      await supabaseClient
+        .from("appointments")
+        .select("*");
 
     if (error) {
 
@@ -404,7 +516,8 @@ async function loadAppointments() {
       return;
     }
 
-    AdviserOS.appointments = data || [];
+    AdviserOS.appointments =
+      data || [];
 
     console.log(
       "Adviser OS: Appointments loaded:",
@@ -435,9 +548,10 @@ async function loadSales() {
 
   try {
 
-    const { data, error } = await supabaseClient
-      .from("sales")
-      .select("*");
+    const { data, error } =
+      await supabaseClient
+        .from("sales")
+        .select("*");
 
     if (error) {
 
@@ -451,9 +565,11 @@ async function loadSales() {
       return;
     }
 
-    const sales = data || [];
+    const sales =
+      data || [];
 
-    AdviserOS.adviser.sales = sales.length;
+    AdviserOS.adviser.sales =
+      sales.length;
 
     console.log(
       "Adviser OS: Sales loaded:",
@@ -501,8 +617,6 @@ function updateCommandCentre() {
     );
 
 
-  // Cycle target
-
   if (targetElement) {
 
     targetElement.textContent =
@@ -510,8 +624,6 @@ function updateCommandCentre() {
 
   }
 
-
-  // Sales
 
   if (salesElement) {
 
@@ -521,8 +633,6 @@ function updateCommandCentre() {
   }
 
 
-  // Active prospects
-
   if (prospectElement) {
 
     prospectElement.textContent =
@@ -530,8 +640,6 @@ function updateCommandCentre() {
 
   }
 
-
-  // Hot leads
 
   if (hotLeadElement) {
 
@@ -555,11 +663,6 @@ function updateCommandCentre() {
       hotLeads;
 
   }
-
-
-  console.log(
-    "Adviser OS: Command Centre updated."
-  );
 
 }
 
@@ -696,7 +799,7 @@ async function initialiseAdviserOS() {
 
 
 // ------------------------------------------------------------
-// AUTO REFRESH
+// AUTOMATIC REFRESH
 // ------------------------------------------------------------
 
 setInterval(
@@ -705,10 +808,6 @@ setInterval(
     if (!AdviserOS.connected) {
       return;
     }
-
-    console.log(
-      "Adviser OS: Automatic data refresh..."
-    );
 
     await refreshAdviserOSData();
 
