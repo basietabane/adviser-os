@@ -1,9 +1,10 @@
 // ============================================================
 // ADVISER OS — APPLICATION ENGINE
-// Version 1.0
+// Version 1.1
 // ============================================================
 
 console.log("Adviser OS app.js loading...");
+
 
 // ------------------------------------------------------------
 // SUPABASE CONNECTION
@@ -53,9 +54,12 @@ const AdviserOS = {
   connected: false,
 
   adviser: {
+    id: "",
     name: "",
+    email: "",
+    phone: "",
     target: 13,
-    sales: 1
+    sales: 0
   },
 
   prospects: [],
@@ -64,64 +68,13 @@ const AdviserOS = {
 
   ideas: [],
 
-  news: []
+  news: [],
+
+  activities: [],
+
+  appointments: []
 
 };
-
-
-// ------------------------------------------------------------
-// CONNECTION CHECK
-// ------------------------------------------------------------
-
-async function checkSupabaseConnection() {
-
-  if (!supabaseClient) {
-    console.warn("Adviser OS: Supabase client not available.");
-    AdviserOS.connected = false;
-    return false;
-  }
-
-  try {
-
-    const { error } = await supabaseClient
-      .from("profiles")
-      .select("*")
-      .limit(1);
-
-    if (error) {
-      console.error(
-        "Adviser OS: Supabase test failed:",
-        error.message
-      );
-
-      AdviserOS.connected = false;
-      updateConnectionDisplay();
-      return false;
-    }
-
-    AdviserOS.connected = true;
-
-    console.log(
-      "Adviser OS: Supabase database connected."
-    );
-
-    updateConnectionDisplay();
-
-    return true;
-
-  } catch (error) {
-
-    console.error(
-      "Adviser OS: Connection test failed.",
-      error
-    );
-
-    AdviserOS.connected = false;
-    updateConnectionDisplay();
-
-    return false;
-  }
-}
 
 
 // ------------------------------------------------------------
@@ -150,6 +103,463 @@ function updateConnectionDisplay() {
     }
 
   });
+
+}
+
+
+// ------------------------------------------------------------
+// SUPABASE CONNECTION CHECK
+// ------------------------------------------------------------
+
+async function checkSupabaseConnection() {
+
+  if (!supabaseClient) {
+
+    console.warn(
+      "Adviser OS: Supabase client not available."
+    );
+
+    AdviserOS.connected = false;
+
+    updateConnectionDisplay();
+
+    return false;
+  }
+
+  try {
+
+    const { error } = await supabaseClient
+      .from("profiles")
+      .select("*")
+      .limit(1);
+
+    if (error) {
+
+      console.error(
+        "Adviser OS: Supabase test failed:",
+        error.message
+      );
+
+      AdviserOS.connected = false;
+
+      updateConnectionDisplay();
+
+      return false;
+    }
+
+    AdviserOS.connected = true;
+
+    console.log(
+      "Adviser OS: Supabase database connected."
+    );
+
+    updateConnectionDisplay();
+
+    return true;
+
+  } catch (error) {
+
+    console.error(
+      "Adviser OS: Connection test failed.",
+      error
+    );
+
+    AdviserOS.connected = false;
+
+    updateConnectionDisplay();
+
+    return false;
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD ADVISER
+// ------------------------------------------------------------
+
+async function loadAdviser() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("advisers")
+      .select("*")
+      .limit(1);
+
+    if (error) {
+
+      console.error(
+        "Adviser OS: Could not load adviser:",
+        error.message
+      );
+
+      return;
+    }
+
+    if (data && data.length > 0) {
+
+      const adviser = data[0];
+
+      AdviserOS.adviser.id =
+        adviser.id || "";
+
+      AdviserOS.adviser.name =
+        adviser.full_name || "";
+
+      AdviserOS.adviser.email =
+        adviser.email || "";
+
+      AdviserOS.adviser.phone =
+        adviser.phone || "";
+
+      AdviserOS.adviser.target =
+        Number(adviser.target_sales) || 13;
+
+      console.log(
+        "Adviser OS: Adviser loaded:",
+        AdviserOS.adviser.name
+      );
+
+    }
+
+  } catch (error) {
+
+    console.error(
+      "Adviser OS: Adviser loading failed.",
+      error
+    );
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD PROSPECTS
+// ------------------------------------------------------------
+
+async function loadProspects() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("prospects")
+      .select("*");
+
+    if (error) {
+
+      console.error(
+        "Adviser OS: Could not load prospects:",
+        error.message
+      );
+
+      AdviserOS.prospects = [];
+
+      return;
+    }
+
+    AdviserOS.prospects = data || [];
+
+    console.log(
+      "Adviser OS: Prospects loaded:",
+      AdviserOS.prospects.length
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Adviser OS: Prospect loading failed.",
+      error
+    );
+
+    AdviserOS.prospects = [];
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD PRODUCTS
+// ------------------------------------------------------------
+
+async function loadProducts() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("products")
+      .select("*");
+
+    if (error) {
+
+      console.error(
+        "Adviser OS: Could not load products:",
+        error.message
+      );
+
+      AdviserOS.products = [];
+
+      return;
+    }
+
+    AdviserOS.products = data || [];
+
+    console.log(
+      "Adviser OS: Products loaded:",
+      AdviserOS.products.length
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Adviser OS: Product loading failed.",
+      error
+    );
+
+    AdviserOS.products = [];
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD ACTIVITIES
+// ------------------------------------------------------------
+
+async function loadActivities() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("activities")
+      .select("*");
+
+    if (error) {
+
+      console.warn(
+        "Adviser OS: Activities could not be loaded:",
+        error.message
+      );
+
+      AdviserOS.activities = [];
+
+      return;
+    }
+
+    AdviserOS.activities = data || [];
+
+    console.log(
+      "Adviser OS: Activities loaded:",
+      AdviserOS.activities.length
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Adviser OS: Activity loading failed.",
+      error
+    );
+
+    AdviserOS.activities = [];
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD APPOINTMENTS
+// ------------------------------------------------------------
+
+async function loadAppointments() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("appointments")
+      .select("*");
+
+    if (error) {
+
+      console.warn(
+        "Adviser OS: Appointments could not be loaded:",
+        error.message
+      );
+
+      AdviserOS.appointments = [];
+
+      return;
+    }
+
+    AdviserOS.appointments = data || [];
+
+    console.log(
+      "Adviser OS: Appointments loaded:",
+      AdviserOS.appointments.length
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Adviser OS: Appointment loading failed.",
+      error
+    );
+
+    AdviserOS.appointments = [];
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// LOAD SALES
+// ------------------------------------------------------------
+
+async function loadSales() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } = await supabaseClient
+      .from("sales")
+      .select("*");
+
+    if (error) {
+
+      console.warn(
+        "Adviser OS: Sales could not be loaded:",
+        error.message
+      );
+
+      AdviserOS.adviser.sales = 0;
+
+      return;
+    }
+
+    const sales = data || [];
+
+    AdviserOS.adviser.sales = sales.length;
+
+    console.log(
+      "Adviser OS: Sales loaded:",
+      sales.length
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Adviser OS: Sales loading failed.",
+      error
+    );
+
+    AdviserOS.adviser.sales = 0;
+
+  }
+
+}
+
+
+// ------------------------------------------------------------
+// COMMAND CENTRE
+// ------------------------------------------------------------
+
+function updateCommandCentre() {
+
+  const targetElement =
+    document.querySelector(
+      "[data-cycle-target]"
+    );
+
+  const salesElement =
+    document.querySelector(
+      "[data-sales]"
+    );
+
+  const prospectElement =
+    document.querySelector(
+      "[data-active-prospects]"
+    );
+
+  const hotLeadElement =
+    document.querySelector(
+      "[data-hot-leads]"
+    );
+
+
+  // Cycle target
+
+  if (targetElement) {
+
+    targetElement.textContent =
+      AdviserOS.adviser.target;
+
+  }
+
+
+  // Sales
+
+  if (salesElement) {
+
+    salesElement.textContent =
+      AdviserOS.adviser.sales;
+
+  }
+
+
+  // Active prospects
+
+  if (prospectElement) {
+
+    prospectElement.textContent =
+      AdviserOS.prospects.length;
+
+  }
+
+
+  // Hot leads
+
+  if (hotLeadElement) {
+
+    const hotLeads =
+      AdviserOS.prospects.filter(
+        prospect => {
+
+          return (
+            prospect.hot === true ||
+            prospect.hot === "true" ||
+            prospect.priority === "hot" ||
+            prospect.priority === "Hot" ||
+            prospect.status === "hot" ||
+            prospect.status === "Hot"
+          );
+
+        }
+      ).length;
+
+    hotLeadElement.textContent =
+      hotLeads;
+
+  }
+
+
+  console.log(
+    "Adviser OS: Command Centre updated."
+  );
 
 }
 
@@ -217,64 +627,32 @@ function productIntelligence() {
 
 
 // ------------------------------------------------------------
-// COMMAND CENTRE
+// REFRESH ALL DATA
 // ------------------------------------------------------------
 
-function updateCommandCentre() {
+async function refreshAdviserOSData() {
 
-  const targetElement =
-    document.querySelector(
-      "[data-cycle-target]"
-    );
+  console.log(
+    "Adviser OS: Refreshing database data..."
+  );
 
-  const salesElement =
-    document.querySelector(
-      "[data-sales]"
-    );
+  await loadAdviser();
 
-  const prospectElement =
-    document.querySelector(
-      "[data-active-prospects]"
-    );
+  await loadProspects();
 
-  const hotLeadElement =
-    document.querySelector(
-      "[data-hot-leads]"
-    );
+  await loadProducts();
 
+  await loadActivities();
 
-  if (targetElement) {
+  await loadAppointments();
 
-    targetElement.textContent =
-      AdviserOS.adviser.target;
+  await loadSales();
 
-  }
+  updateCommandCentre();
 
-
-  if (salesElement) {
-
-    salesElement.textContent =
-      AdviserOS.adviser.sales;
-
-  }
-
-
-  if (prospectElement) {
-
-    prospectElement.textContent =
-      AdviserOS.prospects.length;
-
-  }
-
-
-  if (hotLeadElement) {
-
-    hotLeadElement.textContent =
-      AdviserOS.prospects.filter(
-        prospect => prospect.hot === true
-      ).length;
-
-  }
+  console.log(
+    "Adviser OS: Database data refreshed."
+  );
 
 }
 
@@ -293,13 +671,50 @@ async function initialiseAdviserOS() {
 
   updateConnectionDisplay();
 
-  await checkSupabaseConnection();
+
+  const connected =
+    await checkSupabaseConnection();
+
+
+  if (connected) {
+
+    await refreshAdviserOSData();
+
+  }
+
+
+  updateCommandCentre();
+
+  updateConnectionDisplay();
+
 
   console.log(
     "Adviser OS initialisation complete."
   );
 
 }
+
+
+// ------------------------------------------------------------
+// AUTO REFRESH
+// ------------------------------------------------------------
+
+setInterval(
+  async function () {
+
+    if (!AdviserOS.connected) {
+      return;
+    }
+
+    console.log(
+      "Adviser OS: Automatic data refresh..."
+    );
+
+    await refreshAdviserOSData();
+
+  },
+  60000
+);
 
 
 // ------------------------------------------------------------
@@ -320,27 +735,55 @@ document.addEventListener(
 // GLOBAL ACCESS
 // ------------------------------------------------------------
 
-window.AdviserOS = AdviserOS;
+window.AdviserOS =
+  AdviserOS;
 
-window.navigateTo = navigateTo;
+window.navigateTo =
+  navigateTo;
 
-window.newProspect = newProspect;
+window.newProspect =
+  newProspect;
 
-window.clientDiscovery = clientDiscovery;
+window.clientDiscovery =
+  clientDiscovery;
 
-window.productIntelligence = productIntelligence;
+window.productIntelligence =
+  productIntelligence;
+
+window.refreshAdviserOSData =
+  refreshAdviserOSData;
+
+
+// ------------------------------------------------------------
+// FINAL LOAD MESSAGE
+// ------------------------------------------------------------
 
 console.log(
   "Adviser OS app.js loaded successfully."
 );
-setTimeout(function () {
 
-  const status = document.getElementById("connection-status");
 
-  if (status) {
-    status.textContent = AdviserOS.connected
-      ? "● Supabase Connected"
-      : "● Supabase NOT Connected";
-  }
+// ------------------------------------------------------------
+// CONNECTION STATUS SAFETY CHECK
+// ------------------------------------------------------------
 
-}, 3000);
+setTimeout(
+  function () {
+
+    const status =
+      document.getElementById(
+        "connection-status"
+      );
+
+    if (status) {
+
+      status.textContent =
+        AdviserOS.connected
+          ? "● Supabase Connected"
+          : "● Supabase NOT Connected";
+
+    }
+
+  },
+  3000
+);
