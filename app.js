@@ -333,3 +333,14 @@ window.productIntelligence = productIntelligence;
 console.log(
   "Adviser OS app.js loaded successfully."
 );
+setTimeout(function () {
+
+  const status = document.getElementById("connection-status");
+
+  if (status) {
+    status.textContent = AdviserOS.connected
+      ? "● Supabase Connected"
+      : "● Supabase NOT Connected";
+  }
+
+}, 3000);
