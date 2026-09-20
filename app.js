@@ -29,7 +29,7 @@ try {
     error
   );
 }
-
+alert("SUPABASE ERROR: " + error.message);
 
 // ============================================================
 // CENTRAL APPLICATION STATE
