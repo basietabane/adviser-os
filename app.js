@@ -913,3 +913,182 @@ setTimeout(
   },
   3000
 );
+// ============================================================
+// ADVISER OS — OPPORTUNITY ENGINE
+// Version 1.0
+// ============================================================
+
+function analyseProspectOpportunity(prospect) {
+  if (!prospect) {
+    return null;
+  }
+
+  const productInterest =
+    (prospect.product_interest || "").trim();
+
+  let primaryProduct = null;
+
+  if (productInterest) {
+    primaryProduct = AdviserOS.products.find(product => {
+      return (
+        product.name.toLowerCase() ===
+        productInterest.toLowerCase()
+      );
+    });
+  }
+
+  const opportunities = [];
+
+  if (primaryProduct) {
+    const intersections =
+      getProductIntersections(primaryProduct.name);
+
+    intersections.forEach(intersection => {
+      const complementaryProduct =
+        intersection.productAName === primaryProduct.name
+          ? intersection.productBName
+          : intersection.productAName;
+
+      const product =
+        getProductByName(complementaryProduct);
+
+      if (product) {
+        opportunities.push({
+          product: product.name,
+          category: product.category,
+          relationship:
+            intersection.relationship_type,
+          explanation:
+            intersection.explanation
+        });
+      }
+    });
+  }
+
+  return {
+    prospectId: prospect.id || "",
+    prospectName: prospect.full_name || "Unnamed Prospect",
+    organisation: prospect.organisation || "",
+    segment: prospect.segment || "",
+    location: prospect.location || "",
+    stage: prospect.stage || "",
+    priority: prospect.priority || "",
+    primaryProduct:
+      primaryProduct ? primaryProduct.name : productInterest,
+    opportunities: opportunities
+  };
+}
+
+
+function runOpportunityEngine() {
+  console.log(
+    "=========================================="
+  );
+
+  console.log(
+    "ADVISER OS — OPPORTUNITY ENGINE"
+  );
+
+  console.log(
+    "=========================================="
+  );
+
+  if (!AdviserOS.prospects.length) {
+    console.log(
+      "No prospects available for analysis."
+    );
+    return [];
+  }
+
+  const results =
+    AdviserOS.prospects.map(
+      analyseProspectOpportunity
+    );
+
+  const opportunities =
+    results.filter(result => {
+      return (
+        result &&
+        result.opportunities &&
+        result.opportunities.length > 0
+      );
+    });
+
+  console.log(
+    "Prospects analysed:",
+    results.length
+  );
+
+  console.log(
+    "Opportunities found:",
+    opportunities.length
+  );
+
+  opportunities.forEach(result => {
+    console.log(
+      "------------------------------------------"
+    );
+
+    console.log(
+      "Prospect:",
+      result.prospectName
+    );
+
+    console.log(
+      "Primary product:",
+      result.primaryProduct
+    );
+
+    result.opportunities.forEach(
+      opportunity => {
+        console.log(
+          "Opportunity:",
+          result.primaryProduct,
+          "+",
+          opportunity.product
+        );
+
+        console.log(
+          "Relationship:",
+          opportunity.relationship
+        );
+
+        console.log(
+          "Reason:",
+          opportunity.explanation
+        );
+      }
+    );
+  });
+
+  return opportunities;
+}
+
+
+function getProspectOpportunities(prospectId) {
+  const prospect =
+    AdviserOS.prospects.find(
+      item => item.id === prospectId
+    );
+
+  if (!prospect) {
+    return null;
+  }
+
+  return analyseProspectOpportunity(prospect);
+}
+
+
+// Make Opportunity Engine available to the browser.
+window.analyseProspectOpportunity =
+  analyseProspectOpportunity;
+
+window.runOpportunityEngine =
+  runOpportunityEngine;
+
+window.getProspectOpportunities =
+  getProspectOpportunities;
+
+console.log(
+  "Adviser OS: Opportunity Engine loaded."
+);
