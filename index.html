@@ -1,3 +1,4 @@
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -785,6 +786,25 @@ textarea{
 }
 
 /* =========================================================
+   LIVE RADAR CONTAINER
+   ========================================================= */
+
+#adviser-os-live-radar{
+  width:100%;
+}
+
+#adviser-os-live-radar:empty::before{
+  content:"Loading live Prospecting Radar...";
+  display:block;
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:25px;
+  color:var(--muted);
+  box-shadow:var(--shadow);
+}
+
+/* =========================================================
    MOBILE / TABLET
    ========================================================= */
 
@@ -905,1630 +925,1007 @@ textarea{
 
 <div class="app">
 
-<!-- SIDEBAR -->
+<!-- =======================================================
+     SIDEBAR
+     ======================================================= -->
 
 <aside class="sidebar">
 
-<div class="logo">
-Adviser <span>OS</span>
-</div>
+  <div class="logo">
+    Adviser <span>OS</span>
+  </div>
 
-<div class="subtitle">
-AI Sales Operating System
-</div>
+  <div class="subtitle">
+    AI Sales Operating System
+  </div>
 
-<div class="menu">
+  <div class="menu">
 
-<button class="active" onclick="showScreen('dashboard',this)">
-🏠 Command Centre
-</button>
+    <button class="active" onclick="showScreen('dashboard',this)">
+      🏠 Command Centre
+    </button>
 
-<button onclick="showScreen('brief',this)">
-📰 Morning Brief
-</button>
+    <button onclick="showScreen('brief',this)">
+      📰 Morning Brief
+    </button>
 
-<button onclick="showScreen('prospects',this)">
-👥 Prospects
-</button>
+    <button onclick="showScreen('prospects',this)">
+      👥 Prospects
+    </button>
 
-<button onclick="showScreen('radar',this)">
-🎯 Prospecting Radar
-</button>
+    <button onclick="showScreen('radar',this)">
+      🎯 Prospecting Radar
+    </button>
 
-<button onclick="showScreen('pipeline',this)">
-📊 Pipeline
-</button>
+    <button onclick="showScreen('pipeline',this)">
+      📊 Pipeline
+    </button>
 
-<button onclick="showScreen('products',this)">
-🧩 Product Intelligence
-</button>
+    <button onclick="showScreen('products',this)">
+      🧩 Product Intelligence
+    </button>
 
-<button onclick="showScreen('clients',this)">
-👤 Client Workspace
-</button>
+    <button onclick="showScreen('clients',this)">
+      👤 Client Workspace
+    </button>
 
-<button onclick="showScreen('territory',this)">
-📍 Territory
-</button>
+    <button onclick="showScreen('territory',this)">
+      📍 Territory
+    </button>
 
-<button onclick="showScreen('ideas',this)">
-💡 Ideas Lab
-</button>
+    <button onclick="showScreen('ideas',this)">
+      💡 Ideas Lab
+    </button>
 
-<button onclick="showScreen('settings',this)">
-⚙️ Settings
-</button>
+    <button onclick="showScreen('settings',this)">
+      ⚙️ Settings
+    </button>
 
-</div>
+  </div>
 
 </aside>
 
 
-<!-- MAIN -->
+<!-- =======================================================
+     MAIN
+     ======================================================= -->
 
 <main class="main">
 
 
-<!-- DASHBOARD -->
+<!-- =======================================================
+     DASHBOARD
+     ======================================================= -->
 
 <section id="dashboard" class="screen active">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Command Centre</h1>
+      <h1>Command Centre</h1>
 
-<p>
-Your adviser activity at a glance.
-</p>
+      <p>
+        Your adviser activity at a glance.
+      </p>
 
-</div>
+    </div>
 
-<div class="status">
-<strong id="connection-status">● Prototype Online</strong>
-</div>
+    <div class="status">
+      <strong id="connection-status">● Prototype Online</strong>
+    </div>
 
-</div>
+  </div>
 
 
-<div class="cards">
+  <div class="cards">
 
-<div class="card">
+    <div class="card">
 
-<div class="label">
-Cycle Target
-</div>
+      <div class="label">
+        Cycle Target
+      </div>
 
-<div class="number">
-13
-</div>
+      <div class="number">
+        13
+      </div>
 
-<div class="muted">
-Sales required
-</div>
+      <div class="muted">
+        Sales required
+      </div>
 
-</div>
+    </div>
 
 
-<div class="card">
+    <div class="card">
 
-<div class="label">
-Sales
-</div>
+      <div class="label">
+        Sales
+      </div>
 
-<div class="number">
-1
-</div>
+      <div class="number">
+        1
+      </div>
 
-<div class="muted">
-Completed this cycle
-</div>
+      <div class="muted">
+        Completed this cycle
+      </div>
 
-</div>
+    </div>
 
 
-<div class="card">
+    <div class="card">
 
-<div class="label">
-Active Prospects
-</div>
+      <div class="label">
+        Active Prospects
+      </div>
 
-<div class="number">
-24
-</div>
+      <div class="number">
+        24
+      </div>
 
-<div class="muted">
-Prospects in pipeline
-</div>
+      <div class="muted">
+        Prospects in pipeline
+      </div>
 
-</div>
+    </div>
 
 
-<div class="card opportunity">
+    <div class="card opportunity">
 
-<div class="label">
-Hot Leads
-</div>
+      <div class="label">
+        Hot Leads
+      </div>
 
-<div class="number">
-5
-</div>
+      <div class="number">
+        5
+      </div>
 
-<div class="muted">
-Require attention
-</div>
+      <div class="muted">
+        Require attention
+      </div>
 
-</div>
+    </div>
 
-</div>
+  </div>
 
 
-<div class="section">
+  <div class="section">
 
-<div class="section-grid">
+    <div class="section-grid">
 
-<div class="card">
+      <div class="card">
 
-<h3>
-Today's Action Plan
-</h3>
+        <h3>
+          Today's Action Plan
+        </h3>
 
-<div class="item">
+        <div class="item">
 
-<h4>
-Follow up hot prospects
-</h4>
+          <h4>
+            Follow up hot prospects
+          </h4>
 
-<div class="muted">
-Prioritise prospects with appointments,
-strong needs or recent engagement.
-</div>
+          <div class="muted">
+            Prioritise prospects with appointments,
+            strong needs or recent engagement.
+          </div>
 
-</div>
+        </div>
 
 
-<div class="item">
+        <div class="item">
 
-<h4>
-New prospecting
-</h4>
+          <h4>
+            New prospecting
+          </h4>
 
-<div class="muted">
-Build new conversations with your selected
-prospecting segments.
-</div>
+          <div class="muted">
+            Build new conversations with your selected
+            prospecting segments.
+          </div>
 
-</div>
+        </div>
 
 
-<div class="item">
+        <div class="item">
 
-<h4>
-Product opportunities
-</h4>
+          <h4>
+            Product opportunities
+          </h4>
 
-<div class="muted">
-Review client needs for legitimate
-product intersections.
-</div>
+          <div class="muted">
+            Review client needs for legitimate
+            product intersections.
+          </div>
 
-</div>
+        </div>
 
-</div>
+      </div>
 
 
-<div class="card">
+      <div class="card">
 
-<h3>
-Quick Actions
-</h3>
+        <h3>
+          Quick Actions
+        </h3>
 
-<button class="button"
-onclick="showScreen('prospects',document.querySelectorAll('.menu button')[2])">
+        <button class="button"
+          onclick="showScreen('prospects',document.querySelectorAll('.menu button')[2])">
+          + New Prospect
+        </button>
 
-+ New Prospect
+        <br><br>
 
-</button>
+        <button class="button secondary"
+          onclick="showScreen('clients',document.querySelectorAll('.menu button')[6])">
+          + Client Discovery
+        </button>
 
-<br><br>
+        <br><br>
 
-<button class="button secondary"
-onclick="showScreen('clients',document.querySelectorAll('.menu button')[6])">
+        <button class="button secondary"
+          onclick="showScreen('products',document.querySelectorAll('.menu button')[5])">
+          Product Intelligence
+        </button>
 
-+ Client Discovery
+      </div>
 
-</button>
+    </div>
 
-<br><br>
+  </div>
 
-<button class="button secondary"
-onclick="showScreen('products',document.querySelectorAll('.menu button')[5])">
 
-Product Intelligence
+  <div class="section">
 
-</button>
+    <div class="intelligence">
 
-</div>
+      <h3>
+        🧠 Adviser OS Intelligence
+      </h3>
 
-</div>
+      <p class="muted">
 
-</div>
+        The system will combine your client information,
+        product knowledge, industry intelligence and sales activity
+        to help identify what deserves your attention next.
 
+      </p>
 
-<div class="section">
+    </div>
 
-<div class="intelligence">
-
-<h3>
-🧠 Adviser OS Intelligence
-</h3>
-
-<p class="muted">
-
-The system will combine your client information,
-product knowledge, industry intelligence and sales activity
-to help identify what deserves your attention next.
-
-</p>
-
-</div>
-
-</div>
+  </div>
 
 </section>
 
 
-<!-- MORNING BRIEF -->
+<!-- =======================================================
+     MORNING BRIEF
+     ======================================================= -->
 
 <section id="brief" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Morning Brief</h1>
+      <h1>Morning Brief</h1>
 
-<p>
-Industry intelligence for your day.
-</p>
+      <p>
+        Industry intelligence for your day.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="card">
-
-<h3>
-Today's Intelligence
-</h3>
-
-<div class="item">
-
-<h4>
-Financial Services News
-</h4>
-
-<p class="muted">
-Live South African financial-services news will
-appear here once the news intelligence layer is connected.
-</p>
-
-</div>
+  </div>
 
 
-<div class="item">
+  <div class="card">
 
-<h4>
-Regulatory Watch
-</h4>
+    <h3>
+      Today's Intelligence
+    </h3>
 
-<p class="muted">
-Important regulatory developments can be monitored
-and summarised here.
-</p>
+    <div class="item">
 
-</div>
+      <h4>
+        Financial Services News
+      </h4>
+
+      <p class="muted">
+        Live South African financial-services news will
+        appear here once the news intelligence layer is connected.
+      </p>
+
+    </div>
 
 
-<div class="item">
+    <div class="item">
 
-<h4>
-Why It Matters
-</h4>
+      <h4>
+        Regulatory Watch
+      </h4>
 
-<p class="muted">
-Adviser OS will convert important developments into
-practical conversation opportunities.
-</p>
+      <p class="muted">
+        Important regulatory developments can be monitored
+        and summarised here.
+      </p>
 
-</div>
+    </div>
 
-</div>
+
+    <div class="item">
+
+      <h4>
+        Why It Matters
+      </h4>
+
+      <p class="muted">
+        Adviser OS will convert important developments into
+        practical conversation opportunities.
+      </p>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- PROSPECTS -->
+<!-- =======================================================
+     PROSPECTS
+     ======================================================= -->
 
 <section id="prospects" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Prospects</h1>
+      <h1>Prospects</h1>
 
-<p>
-Manage your prospecting activity.
-</p>
+      <p>
+        Manage your prospecting activity.
+      </p>
 
-</div>
+    </div>
 
-<button class="button"
-onclick="alert('New prospect form will be connected to Supabase.')">
+    <button class="button"
+      onclick="alert('New prospect form will be connected to Supabase.')">
 
-+ New Prospect
+      + New Prospect
 
-</button>
+    </button>
 
-</div>
-
-
-<div class="card">
-
-<input
-type="text"
-placeholder="Search prospects..."
->
+  </div>
 
 
-<table>
+  <div class="card">
 
-<thead>
+    <input
+      type="text"
+      placeholder="Search prospects..."
+    >
 
-<tr>
 
-<th>Name</th>
-<th>Segment</th>
-<th>Interest</th>
-<th>Status</th>
+    <table>
 
-</tr>
+      <thead>
 
-</thead>
+        <tr>
 
-<tbody>
+          <th>Name</th>
+          <th>Segment</th>
+          <th>Interest</th>
+          <th>Status</th>
 
-<tr>
+        </tr>
 
-<td>Thono</td>
-<td>Public Sector</td>
-<td>Protection</td>
-<td><span class="badge">Hot</span></td>
+      </thead>
 
-</tr>
+      <tbody>
 
-<tr>
+        <tr>
 
-<td>BP Unit 15</td>
-<td>Business</td>
-<td>Multiple</td>
-<td><span class="badge blue">Follow Up</span></td>
+          <td>Thono</td>
+          <td>Public Sector</td>
+          <td>Protection</td>
+          <td>
+            <span class="badge">Hot</span>
+          </td>
 
-</tr>
+        </tr>
 
-<tr>
 
-<td>Social Workers</td>
-<td>Professional</td>
-<td>Medical</td>
-<td><span class="badge green">Appointment</span></td>
+        <tr>
 
-</tr>
+          <td>BP Unit 15</td>
+          <td>Business</td>
+          <td>Multiple</td>
+          <td>
+            <span class="badge blue">Follow Up</span>
+          </td>
 
-<tr>
+        </tr>
 
-<td>Kgosietsile</td>
-<td>Individual</td>
-<td>Essential Med</td>
-<td><span class="badge green">Active</span></td>
 
-</tr>
+        <tr>
 
-</tbody>
+          <td>Social Workers</td>
+          <td>Professional</td>
+          <td>Medical</td>
+          <td>
+            <span class="badge green">Appointment</span>
+          </td>
 
-</table>
+        </tr>
 
-</div>
+
+        <tr>
+
+          <td>Kgosietsile</td>
+          <td>Individual</td>
+          <td>Essential Med</td>
+          <td>
+            <span class="badge green">Active</span>
+          </td>
+
+        </tr>
+
+      </tbody>
+
+    </table>
+
+  </div>
 
 </section>
 
 
 <!-- =======================================================
      PROSPECTING RADAR
+     
+     IMPORTANT:
+     This section intentionally contains NO hard-coded
+     intelligence cards.
+
+     app.js generates the live Radar here using:
+     - prospecting_signals
+     - territory_signals
      ======================================================= -->
 
 <section id="radar" class="screen">
 
-<div class="topbar">
+  <div id="adviser-os-live-radar"></div>
 
-<div>
+</section>
 
-<h1>Prospecting Radar</h1>
 
-<p>
-Local signals, timing intelligence and prospecting opportunities.
-</p>
-
-</div>
-
-<div class="status">
-● Intelligence Layer
-</div>
-
-</div>
-
-
-<!-- RADAR HEADER -->
-
-<div class="radar-header">
-
-<h2>🎯 Prospecting Radar — Mahikeng / Mmabatho</h2>
-
-<p>
-Adviser OS watches public and legitimate business/economic signals,
-separates documented evidence from inference, and converts relevant
-developments into structured prospecting intelligence.
-</p>
-
-<div class="radar-flow">
-
-<span>SIGNAL</span>
-<span>LOCATION</span>
-<span>SEGMENT</span>
-<span>TIMING</span>
-<span>NEED</span>
-<span>PRODUCT</span>
-<span>ACTION</span>
-
-</div>
-
-</div>
-
-
-<div class="radar-grid">
-
-<!-- SIGNAL COLUMN -->
-
-<div>
-
-<div class="card" style="margin-bottom:15px;">
-
-<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
-
-<div>
-
-<h3 style="margin:0;">
-Today's Signals
-</h3>
-
-<p class="muted" style="margin:5px 0 0;">
-Signals currently worth monitoring.
-</p>
-
-</div>
-
-<span class="badge green">
-3 Active Signals
-</span>
-
-</div>
-
-</div>
-
-
-<!-- SIGNAL 1 -->
-
-<div class="signal-card">
-
-<div class="signal-top">
-
-<div>
-
-<div class="signal-type">
-Employment Signal
-</div>
-
-<h3>
-Current Office of the Premier recruitment activity
-</h3>
-
-<div class="signal-location">
-📍 Mmabatho
-</div>
-
-</div>
-
-<span class="badge green confidence high">
-High confidence
-</span>
-
-</div>
-
-
-<div class="signal-grid">
-
-<div class="signal-detail">
-
-<strong>Segment</strong>
-
-<span>
-Public-sector professionals and administrative workers
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Timing</strong>
-
-<span>
-Recruitment → selection → appointment → commencement → first-income period
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Potential needs</strong>
-
-<span>
-Financial resilience, protection, savings, investment and medical planning
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Product connection</strong>
-
-<span>
-Needs-based Sanlam product review after client discovery
-</span>
-
-</div>
-
-</div>
-
-
-<div class="evidence">
-
-<div class="evidence-grid">
-
-<div class="evidence-box fact">
-
-<strong>Documented evidence</strong>
-
-<p>
-Published vacancy information confirms active recruitment and positions associated with Mmabatho.
-</p>
-
-</div>
-
-
-<div class="evidence-box inference">
-
-<strong>AI inference</strong>
-
-<p>
-Recruitment creates a potential future employment and financial-transition signal, but applicants are not assumed to have been appointed.
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div class="radar-action">
-
-<div>
-
-<div class="radar-action-text">
-Recommended action: monitor the recruitment cycle and prepare appropriate discovery questions.
-</div>
-
-<div class="review">
-Next review: scheduled intelligence recheck
-</div>
-
-</div>
-
-<button class="button secondary">
-View Intelligence
-</button>
-
-</div>
-
-</div>
-
-
-<!-- SIGNAL 2 -->
-
-<div class="signal-card">
-
-<div class="signal-top">
-
-<div>
-
-<div class="signal-type">
-Employment Signal
-</div>
-
-<h3>
-Cooperative Governance recruitment activity
-</h3>
-
-<div class="signal-location">
-📍 Mmabatho / Mahikeng
-</div>
-
-</div>
-
-<span class="badge green confidence high">
-High confidence
-</span>
-
-</div>
-
-
-<div class="signal-grid">
-
-<div class="signal-detail">
-
-<strong>Segment</strong>
-
-<span>
-Public-sector professionals and administrative workers
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Timing</strong>
-
-<span>
-Recruitment → selection → appointment → possible financial transition
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Potential needs</strong>
-
-<span>
-Protection, savings, investment, medical planning and financial planning
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Product connection</strong>
-
-<span>
-Needs-based product matching after circumstances are established
-</span>
-
-</div>
-
-</div>
-
-
-<div class="evidence">
-
-<div class="evidence-grid">
-
-<div class="evidence-box fact">
-
-<strong>Documented evidence</strong>
-
-<p>
-Published vacancy information confirms a current recruitment cycle involving positions connected to the local area.
-</p>
-
-</div>
-
-
-<div class="evidence-box inference">
-
-<strong>AI inference</strong>
-
-<p>
-The recruitment cycle is a local employment signal; it does not establish which applicants will ultimately be appointed.
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div class="radar-action">
-
-<div>
-
-<div class="radar-action-text">
-Recommended action: track later appointment or commencement signals.
-</div>
-
-<div class="review">
-Next review: scheduled intelligence recheck
-</div>
-
-</div>
-
-<button class="button secondary">
-View Intelligence
-</button>
-
-</div>
-
-</div>
-
-
-<!-- SIGNAL 3 -->
-
-<div class="signal-card">
-
-<div class="signal-top">
-
-<div>
-
-<div class="signal-type">
-Economic Signal
-</div>
-
-<h3>
-South African household affordability signal
-</h3>
-
-<div class="signal-location">
-📍 South Africa / North West
-</div>
-
-</div>
-
-<span class="badge green confidence high">
-High confidence
-</span>
-
-</div>
-
-
-<div class="signal-grid">
-
-<div class="signal-detail">
-
-<strong>Segment</strong>
-
-<span>
-Salaried households and consumers
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Timing</strong>
-
-<span>
-Current and ongoing
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Potential needs</strong>
-
-<span>
-Financial resilience, protection, savings and appropriate investment planning
-</span>
-
-</div>
-
-
-<div class="signal-detail">
-
-<strong>Product connection</strong>
-
-<span>
-Affordability and needs assessment before recommendations
-</span>
-
-</div>
-
-</div>
-
-
-<div class="evidence">
-
-<div class="evidence-grid">
-
-<div class="evidence-box fact">
-
-<strong>Documented evidence</strong>
-
-<p>
-Recent South African consumer indicators show household finances remain sensitive to economic pressures.
-</p>
-
-</div>
-
-
-<div class="evidence-box inference">
-
-<strong>AI inference</strong>
-
-<p>
-Financial priorities and affordability may be particularly important when discussing additional commitments.
-</p>
-
-</div>
-
-</div>
-
-</div>
-
-
-<div class="radar-action">
-
-<div>
-
-<div class="radar-action-text">
-Recommended action: adapt discovery conversations to current household priorities.
-</div>
-
-<div class="review">
-Next review: scheduled intelligence recheck
-</div>
-
-</div>
-
-<button class="button secondary">
-View Intelligence
-</button>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- RIGHT COLUMN -->
-
-<div>
-
-
-<!-- TERRITORY PULSE -->
-
-<div class="radar-side-card">
-
-<h3>
-📍 Territory Pulse
-</h3>
-
-<p class="muted">
-Current intelligence clusters across your operating territory.
-</p>
-
-
-<div class="pulse-item">
-
-<strong>Mmabatho</strong>
-
-<span>
-Government • Professional services • Education • Healthcare • Business services
-</span>
-
-</div>
-
-
-<div class="pulse-item">
-
-<strong>Mahikeng</strong>
-
-<span>
-Retail • Small business • Services • Transport/logistics • Informal economy
-</span>
-
-</div>
-
-
-<div class="pulse-item">
-
-<strong>Wider North West</strong>
-
-<span>
-Mining • Agriculture • Public sector • Manufacturing • Professional services
-</span>
-
-</div>
-
-</div>
-
-
-<!-- CLUSTER -->
-
-<div class="radar-side-card cluster">
-
-<h3>
-⚡ Local Cluster Detected
-</h3>
-
-<p class="muted">
-
-Multiple public-sector recruitment signals are currently connected
-to the Mmabatho / Mahikeng area.
-
-</p>
-
-<p class="muted">
-
-The system should monitor these signals together rather than
-treating each vacancy as an isolated event.
-
-</p>
-
-<span class="badge">
-Cluster monitoring
-</span>
-
-</div>
-
-
-<!-- TIMING -->
-
-<div class="radar-side-card">
-
-<h3>
-⏱️ Timing Engine
-</h3>
-
-<div class="pulse-item">
-
-<strong>1. Detected</strong>
-
-<span>
-Public signal identified.
-</span>
-
-</div>
-
-<div class="pulse-item">
-
-<strong>2. Developing</strong>
-
-<span>
-Signal continues or additional evidence appears.
-</span>
-
-</div>
-
-<div class="pulse-item">
-
-<strong>3. Event occurring</strong>
-
-<span>
-Appointment, commencement or other documented event.
-</span>
-
-</div>
-
-<div class="pulse-item">
-
-<strong>4. Financial transition</strong>
-
-<span>
-Potential period where financial circumstances may change.
-</span>
-
-</div>
-
-<div class="pulse-item">
-
-<strong>5. Follow-up window</strong>
-
-<span>
-Reassess the signal using updated public information.
-</span>
-
-</div>
-
-</div>
-
-
-<!-- SIGNAL SCALE -->
-
-<div class="radar-side-card">
-
-<h3>
-Signal Strength
-</h3>
-
-<div class="pulse-item">
-
-<strong>
-<span class="badge green">Strong</span>
-</strong>
-
-<span>
-Recent, local and supported by multiple independent indicators.
-</span>
-
-</div>
-
-<div class="pulse-item">
-
-<strong>
-<span class="badge">Moderate</span>
-</strong>
-
-<span>
-Reliable signal with a reasonable connection but less timing certainty.
-</span>
-
-</div>
-
-<div class="pulse-item">
-
-<strong>
-<span class="badge blue">Early signal</span>
-</strong>
-
-<span>
-Interesting development with limited evidence requiring monitoring.
-</span>
-
-</div>
-
-</div>
-
-</div>
-
-</div>
-
-
-<!-- PIPELINE -->
+<!-- =======================================================
+     PIPELINE
+     ======================================================= -->
 
 <section id="pipeline" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Pipeline</h1>
+      <h1>Pipeline</h1>
 
-<p>
-Track every opportunity from contact to outcome.
-</p>
+      <p>
+        Track every opportunity from contact to outcome.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="card">
-
-<div class="item">
-
-<h4>
-New
-</h4>
-
-<p class="muted">
-Newly identified prospects.
-</p>
-
-</div>
+  </div>
 
 
-<div class="item">
+  <div class="card">
 
-<h4>
-Contacted
-</h4>
+    <div class="item">
 
-<p class="muted">
-Prospects you have spoken to.
-</p>
+      <h4>
+        New
+      </h4>
 
-</div>
+      <p class="muted">
+        Newly identified prospects.
+      </p>
 
-
-<div class="item">
-
-<h4>
-Appointment
-</h4>
-
-<p class="muted">
-Meetings and consultations.
-</p>
-
-</div>
+    </div>
 
 
-<div class="item">
+    <div class="item">
 
-<h4>
-Proposal
-</h4>
+      <h4>
+        Contacted
+      </h4>
 
-<p class="muted">
-Product discussion or quotation stage.
-</p>
+      <p class="muted">
+        Prospects you have spoken to.
+      </p>
 
-</div>
+    </div>
 
 
-<div class="item">
+    <div class="item">
 
-<h4>
-Won
-</h4>
+      <h4>
+        Appointment
+      </h4>
 
-<p class="muted">
-Completed business.
-</p>
+      <p class="muted">
+        Meetings and consultations.
+      </p>
 
-</div>
+    </div>
 
-</div>
+
+    <div class="item">
+
+      <h4>
+        Proposal
+      </h4>
+
+      <p class="muted">
+        Product discussion or quotation stage.
+      </p>
+
+    </div>
+
+
+    <div class="item">
+
+      <h4>
+        Won
+      </h4>
+
+      <p class="muted">
+        Completed business.
+      </p>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- PRODUCTS -->
+<!-- =======================================================
+     PRODUCTS
+     ======================================================= -->
 
 <section id="products" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Product Intelligence</h1>
+      <h1>Product Intelligence</h1>
 
-<p>
-Your product knowledge base.
-</p>
+      <p>
+        Your product knowledge base.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="card">
-
-<h3>
-Products
-</h3>
+  </div>
 
 
-<div class="product">
+  <div class="card">
 
-<strong>
-Funeral Cover
-</strong>
-
-<span class="muted">
-Benefits, eligibility, exclusions,
-pricing and approved information.
-</span>
-
-</div>
+    <h3>
+      Products
+    </h3>
 
 
-<div class="product">
+    <div class="product">
 
-<strong>
-Life Cover
-</strong>
+      <strong>
+        Funeral Cover
+      </strong>
 
-<span class="muted">
-Protection needs, affordability and
-client discovery information.
-</span>
+      <span class="muted">
+        Benefits, eligibility, exclusions,
+        pricing and approved information.
+      </span>
 
-</div>
-
-
-<div class="product">
-
-<strong>
-Investments
-</strong>
-
-<span class="muted">
-Goals, time horizon, contributions and
-investment objectives.
-</span>
-
-</div>
+    </div>
 
 
-<div class="product">
+    <div class="product">
 
-<strong>
-Essential Med
-</strong>
+      <strong>
+        Life Cover
+      </strong>
 
-<span class="muted">
-Medical protection information and
-discovery questions.
-</span>
+      <span class="muted">
+        Protection needs, affordability and
+        client discovery information.
+      </span>
 
-</div>
+    </div>
 
-</div>
+
+    <div class="product">
+
+      <strong>
+        Investments
+      </strong>
+
+      <span class="muted">
+        Goals, time horizon, contributions and
+        investment objectives.
+      </span>
+
+    </div>
+
+
+    <div class="product">
+
+      <strong>
+        Essential Med
+      </strong>
+
+      <span class="muted">
+        Medical protection information and
+        discovery questions.
+      </span>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- CLIENTS -->
+<!-- =======================================================
+     CLIENT WORKSPACE
+     ======================================================= -->
 
 <section id="clients" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Client Workspace</h1>
+      <h1>Client Workspace</h1>
 
-<p>
-Structured client discovery.
-</p>
+      <p>
+        Structured client discovery.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="card">
-
-<h3>
-Client Discovery
-</h3>
+  </div>
 
 
-<label>
-Client Name
-</label>
+  <div class="card">
 
-<input
-type="text"
-placeholder="Enter client name"
->
+    <h3>
+      Client Discovery
+    </h3>
 
 
-<label>
-Main Financial Objective
-</label>
+    <label>
+      Client Name
+    </label>
 
-<select>
-
-<option>
-Select objective
-</option>
-
-<option>
-Family Protection
-</option>
-
-<option>
-Income Protection
-</option>
-
-<option>
-Investment
-</option>
-
-<option>
-Medical Protection
-</option>
-
-</select>
+    <input
+      type="text"
+      placeholder="Enter client name"
+    >
 
 
-<label>
-Discovery Notes
-</label>
+    <label>
+      Main Financial Objective
+    </label>
 
-<textarea
-placeholder="Capture important client information..."
-></textarea>
+    <select>
+
+      <option>
+        Select objective
+      </option>
+
+      <option>
+        Family Protection
+      </option>
+
+      <option>
+        Income Protection
+      </option>
+
+      <option>
+        Investment
+      </option>
+
+      <option>
+        Medical Protection
+      </option>
+
+    </select>
 
 
-<button class="button"
-onclick="alert('Client workspace will connect to Supabase.')">
+    <label>
+      Discovery Notes
+    </label>
 
-Save Discovery
+    <textarea
+      placeholder="Capture important client information..."
+    ></textarea>
 
-</button>
 
-</div>
+    <button class="button"
+      onclick="alert('Client workspace will connect to Supabase.')">
+
+      Save Discovery
+
+    </button>
+
+  </div>
 
 </section>
 
 
-<!-- TERRITORY -->
+<!-- =======================================================
+     TERRITORY
+     ======================================================= -->
 
 <section id="territory" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Territory</h1>
+      <h1>Territory</h1>
 
-<p>
-Prospecting intelligence by area.
-</p>
+      <p>
+        Prospecting intelligence by area.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="cards">
-
-<div class="card">
-
-<h3>
-Mahikeng / Mmabatho
-</h3>
-
-<div class="number">
-Primary
-</div>
-
-<p class="muted">
-Core prospecting territory.
-</p>
-
-</div>
+  </div>
 
 
-<div class="card">
+  <div class="cards">
 
-<h3>
-Zeerust
-</h3>
+    <div class="card">
 
-<div class="number">
-Expansion
-</div>
+      <h3>
+        Mahikeng / Mmabatho
+      </h3>
 
-<p class="muted">
-Potential secondary territory.
-</p>
+      <div class="number">
+        Primary
+      </div>
 
-</div>
+      <p class="muted">
+        Core prospecting territory.
+      </p>
 
-
-<div class="card">
-
-<h3>
-Business Owners
-</h3>
-
-<div class="number">
-Priority
-</div>
-
-<p class="muted">
-High-value prospect segment.
-</p>
-
-</div>
+    </div>
 
 
-<div class="card">
+    <div class="card">
 
-<h3>
-Professionals
-</h3>
+      <h3>
+        Zeerust
+      </h3>
 
-<div class="number">
-Priority
-</div>
+      <div class="number">
+        Expansion
+      </div>
 
-<p class="muted">
-Potential appointment segment.
-</p>
+      <p class="muted">
+        Potential secondary territory.
+      </p>
 
-</div>
+    </div>
 
-</div>
+
+    <div class="card">
+
+      <h3>
+        Business Owners
+      </h3>
+
+      <div class="number">
+        Priority
+      </div>
+
+      <p class="muted">
+        High-value prospect segment.
+      </p>
+
+    </div>
+
+
+    <div class="card">
+
+      <h3>
+        Professionals
+      </h3>
+
+      <div class="number">
+        Priority
+      </div>
+
+      <p class="muted">
+        Potential appointment segment.
+      </p>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- IDEAS -->
+<!-- =======================================================
+     IDEAS LAB
+     ======================================================= -->
 
 <section id="ideas" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Ideas Lab</h1>
+      <h1>Ideas Lab</h1>
 
-<p>
-New ideas become future Adviser OS modules.
-</p>
+      <p>
+        New ideas become future Adviser OS modules.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="card">
-
-<h3>
-Expandable Modules
-</h3>
+  </div>
 
 
-<div class="item">
+  <div class="card">
 
-<h4>
-Commission Planner
-</h4>
-
-<p class="muted">
-Calculate production, premiums and
-commission using configurable product rules.
-</p>
-
-</div>
+    <h3>
+      Expandable Modules
+    </h3>
 
 
-<div class="item">
+    <div class="item">
 
-<h4>
-AI Conversation Coach
-</h4>
+      <h4>
+        Commission Planner
+      </h4>
 
-<p class="muted">
-Prepare for prospect conversations and
-follow-ups.
-</p>
+      <p class="muted">
+        Calculate production, premiums and
+        commission using configurable product rules.
+      </p>
 
-</div>
-
-
-<div class="item">
-
-<h4>
-Learning Coach
-</h4>
-
-<p class="muted">
-Turn industry developments and activity
-into adviser learning.
-</p>
-
-</div>
+    </div>
 
 
-<div class="item">
+    <div class="item">
 
-<h4>
-Regulatory Watch
-</h4>
+      <h4>
+        AI Conversation Coach
+      </h4>
 
-<p class="muted">
-Monitor important financial-services developments.
-</p>
+      <p class="muted">
+        Prepare for prospect conversations and
+        follow-ups.
+      </p>
 
-</div>
+    </div>
 
-</div>
+
+    <div class="item">
+
+      <h4>
+        Learning Coach
+      </h4>
+
+      <p class="muted">
+        Turn industry developments and activity
+        into adviser learning.
+      </p>
+
+    </div>
+
+
+    <div class="item">
+
+      <h4>
+        Regulatory Watch
+      </h4>
+
+      <p class="muted">
+        Monitor important financial-services developments.
+      </p>
+
+    </div>
+
+  </div>
 
 </section>
 
 
-<!-- SETTINGS -->
+<!-- =======================================================
+     SETTINGS
+     ======================================================= -->
 
 <section id="settings" class="screen">
 
-<div class="topbar">
+  <div class="topbar">
 
-<div>
+    <div>
 
-<h1>Settings</h1>
+      <h1>Settings</h1>
 
-<p>
-Configure your Adviser OS.
-</p>
+      <p>
+        Configure your Adviser OS.
+      </p>
 
-</div>
+    </div>
 
-</div>
-
-
-<div class="card">
-
-<h3>
-Adviser Settings
-</h3>
+  </div>
 
 
-<label>
-Sales Cycle Target
-</label>
+  <div class="card">
 
-<input
-type="number"
-value="13"
->
+    <h3>
+      Adviser Settings
+    </h3>
 
 
-<label>
-Working Start Time
-</label>
+    <label>
+      Sales Cycle Target
+    </label>
 
-<input
-type="time"
-value="08:00"
->
-
-
-<label>
-Working End Time
-</label>
-
-<input
-type="time"
-value="14:00"
->
+    <input
+      type="number"
+      value="13"
+    >
 
 
-<label>
-Primary Territory
-</label>
+    <label>
+      Working Start Time
+    </label>
 
-<input
-type="text"
-value="Mahikeng / Mmabatho"
->
+    <input
+      type="time"
+      value="08:00"
+    >
 
 
-<button class="button"
-onclick="alert('Settings will become live after Supabase is connected.')">
+    <label>
+      Working End Time
+    </label>
 
-Save Settings
+    <input
+      type="time"
+      value="14:00"
+    >
 
-</button>
 
-</div>
+    <label>
+      Primary Territory
+    </label>
+
+    <input
+      type="text"
+      value="Mahikeng / Mmabatho"
+    >
+
+
+    <button class="button"
+      onclick="alert('Settings will become live after Supabase is connected.')">
+
+      Save Settings
+
+    </button>
+
+  </div>
 
 </section>
 
@@ -2538,25 +1935,31 @@ Save Settings
 </div>
 
 
+<!-- =======================================================
+     BASIC SCREEN NAVIGATION
+     ======================================================= -->
+
 <script>
 
 function showScreen(id,button){
 
   document
-  .querySelectorAll('.screen')
-  .forEach(screen=>{
-    screen.classList.remove('active');
-  });
+    .querySelectorAll('.screen')
+    .forEach(screen=>{
+      screen.classList.remove('active');
+    });
+
+  const target = document.getElementById(id);
+
+  if(target){
+    target.classList.add('active');
+  }
 
   document
-  .getElementById(id)
-  .classList.add('active');
-
-  document
-  .querySelectorAll('.menu button')
-  .forEach(btn=>{
-    btn.classList.remove('active');
-  });
+    .querySelectorAll('.menu button')
+    .forEach(btn=>{
+      btn.classList.remove('active');
+    });
 
   if(button){
     button.classList.add('active');
@@ -2571,11 +1974,19 @@ function showScreen(id,button){
 
 </script>
 
+
+<!-- =======================================================
+     SUPABASE
+     ======================================================= -->
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+<!-- Adviser OS configuration -->
 <script src="config.js"></script>
 
+<!-- Adviser OS application -->
 <script src="app.js"></script>
 
 </body>
-   </html>
+</html>
+```
