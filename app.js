@@ -1,53 +1,40 @@
 // ============================================================
 // ADVISER OS — APPLICATION ENGINE
-// Version 1.3
+// Version 2.0
 // ============================================================
 
 console.log("Adviser OS app.js loading...");
 
-
-// ------------------------------------------------------------
-// SUPABASE CONNECTION
-// ------------------------------------------------------------
-
 let supabaseClient = null;
 
 try {
-
   if (
     window.supabase &&
     window.SUPABASE_URL &&
     window.SUPABASE_PUBLISHABLE_KEY
   ) {
-
     supabaseClient = window.supabase.createClient(
       window.SUPABASE_URL,
       window.SUPABASE_PUBLISHABLE_KEY
     );
 
     console.log("Adviser OS: Supabase connected.");
-
   } else {
-
     console.warn(
       "Adviser OS: Supabase configuration not found."
     );
-
   }
-
 } catch (error) {
-
   console.error(
     "Adviser OS: Supabase connection failed.",
     error
   );
-
 }
 
 
-// ------------------------------------------------------------
-// APPLICATION STATE
-// ------------------------------------------------------------
+// ============================================================
+// CENTRAL APPLICATION STATE
+// ============================================================
 
 const AdviserOS = {
 
@@ -74,14 +61,15 @@ const AdviserOS = {
 
   activities: [],
 
-  appointments: []
+  appointments: [],
 
+  opportunities: []
 };
 
 
-// ------------------------------------------------------------
-// CONNECTION DISPLAY
-// ------------------------------------------------------------
+// ============================================================
+// CONNECTION STATUS
+// ============================================================
 
 function updateConnectionDisplay() {
 
@@ -98,13 +86,12 @@ function updateConnectionDisplay() {
         : "● Prototype Online";
 
   });
-
 }
 
 
-// ------------------------------------------------------------
-// SUPABASE CONNECTION CHECK
-// ------------------------------------------------------------
+// ============================================================
+// SUPABASE CONNECTION
+// ============================================================
 
 async function checkSupabaseConnection() {
 
@@ -115,12 +102,11 @@ async function checkSupabaseConnection() {
     updateConnectionDisplay();
 
     return false;
-
   }
 
   try {
 
-    const { error } =
+    const { data, error } =
       await supabaseClient
         .from("profiles")
         .select("*")
@@ -138,7 +124,6 @@ async function checkSupabaseConnection() {
       updateConnectionDisplay();
 
       return false;
-
     }
 
     AdviserOS.connected = true;
@@ -163,15 +148,13 @@ async function checkSupabaseConnection() {
     updateConnectionDisplay();
 
     return false;
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD ADVISER
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadAdviser() {
 
@@ -193,7 +176,6 @@ async function loadAdviser() {
       );
 
       return;
-
     }
 
     if (data && data.length > 0) {
@@ -219,7 +201,6 @@ async function loadAdviser() {
         "Adviser loaded:",
         AdviserOS.adviser.name
       );
-
     }
 
   } catch (error) {
@@ -228,15 +209,13 @@ async function loadAdviser() {
       "Adviser OS: Adviser loading failed.",
       error
     );
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD PROSPECTS
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadProspects() {
 
@@ -259,7 +238,6 @@ async function loadProspects() {
       AdviserOS.prospects = [];
 
       return;
-
     }
 
     AdviserOS.prospects =
@@ -277,14 +255,14 @@ async function loadProspects() {
       error
     );
 
+    AdviserOS.prospects = [];
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD PRODUCTS
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadProducts() {
 
@@ -309,7 +287,6 @@ async function loadProducts() {
       AdviserOS.products = [];
 
       return;
-
     }
 
     AdviserOS.products =
@@ -328,15 +305,13 @@ async function loadProducts() {
     );
 
     AdviserOS.products = [];
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD PRODUCT INTERSECTIONS
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadProductIntersections() {
 
@@ -360,21 +335,10 @@ async function loadProductIntersections() {
       AdviserOS.productIntersections = [];
 
       return;
-
     }
 
     AdviserOS.productIntersections =
       data || [];
-
-    console.log(
-      "Product intersections loaded:",
-      AdviserOS.productIntersections.length
-    );
-
-
-    // --------------------------------------------------------
-    // CONNECT PRODUCT NAMES TO INTERSECTIONS
-    // --------------------------------------------------------
 
     AdviserOS.productIntersections =
       AdviserOS.productIntersections.map(
@@ -395,7 +359,6 @@ async function loadProductIntersections() {
             );
 
           return {
-
             ...intersection,
 
             productAName:
@@ -407,31 +370,13 @@ async function loadProductIntersections() {
               productB
                 ? productB.name
                 : "Unknown Product"
-
           };
-
         }
       );
 
-
     console.log(
-      "Adviser OS: Product intersections linked to products."
-    );
-
-
-    AdviserOS.productIntersections.forEach(
-      intersection => {
-
-        console.log(
-          "Intersection:",
-          intersection.productAName,
-          "+",
-          intersection.productBName,
-          "|",
-          intersection.relationship_type
-        );
-
-      }
+      "Product intersections loaded:",
+      AdviserOS.productIntersections.length
     );
 
   } catch (error) {
@@ -442,15 +387,13 @@ async function loadProductIntersections() {
     );
 
     AdviserOS.productIntersections = [];
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD ACTIVITIES
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadActivities() {
 
@@ -473,7 +416,6 @@ async function loadActivities() {
       AdviserOS.activities = [];
 
       return;
-
     }
 
     AdviserOS.activities =
@@ -482,15 +424,13 @@ async function loadActivities() {
   } catch (error) {
 
     AdviserOS.activities = [];
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD APPOINTMENTS
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadAppointments() {
 
@@ -513,7 +453,6 @@ async function loadAppointments() {
       AdviserOS.appointments = [];
 
       return;
-
     }
 
     AdviserOS.appointments =
@@ -522,15 +461,13 @@ async function loadAppointments() {
   } catch (error) {
 
     AdviserOS.appointments = [];
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // LOAD SALES
-// ------------------------------------------------------------
+// ============================================================
 
 async function loadSales() {
 
@@ -551,7 +488,6 @@ async function loadSales() {
       );
 
       return;
-
     }
 
     AdviserOS.adviser.sales =
@@ -563,15 +499,13 @@ async function loadSales() {
       "Sales loading failed.",
       error
     );
-
   }
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // COMMAND CENTRE
-// ------------------------------------------------------------
+// ============================================================
 
 function updateCommandCentre() {
 
@@ -600,7 +534,6 @@ function updateCommandCentre() {
 
     targetElement.textContent =
       AdviserOS.adviser.target;
-
   }
 
 
@@ -608,7 +541,6 @@ function updateCommandCentre() {
 
     salesElement.textContent =
       AdviserOS.adviser.sales;
-
   }
 
 
@@ -616,7 +548,6 @@ function updateCommandCentre() {
 
     prospectElement.textContent =
       AdviserOS.prospects.length;
-
   }
 
 
@@ -631,64 +562,1013 @@ function updateCommandCentre() {
             prospect.hot === "true" ||
             prospect.priority === "hot" ||
             prospect.priority === "Hot" ||
+            prospect.priority === "HIGH" ||
+            prospect.priority === "High" ||
             prospect.status === "hot" ||
             prospect.status === "Hot"
           );
-
         }
       ).length;
 
     hotLeadElement.textContent =
       hotLeads;
-
   }
-
 }
 
 
-// ------------------------------------------------------------
-// PRODUCT INTELLIGENCE HELPER
-// ------------------------------------------------------------
+// ============================================================
+// PRODUCT HELPERS
+// ============================================================
 
 function getProductByName(name) {
+
+  if (!name) return null;
 
   return AdviserOS.products.find(
     product =>
       product.name.toLowerCase() ===
       name.toLowerCase()
   ) || null;
-
 }
 
 
-// ------------------------------------------------------------
-// FIND PRODUCT INTERSECTIONS
-// ------------------------------------------------------------
-
 function getProductIntersections(productName) {
+
+  if (!productName) return [];
 
   return AdviserOS.productIntersections.filter(
     intersection => {
 
       return (
-        intersection.productAName === productName ||
-        intersection.productBName === productName
-      );
+        intersection.productAName ===
+          productName ||
 
+        intersection.productBName ===
+          productName
+      );
     }
   );
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
+// OPPORTUNITY ANALYSIS
+// ============================================================
+
+function analyseProspectOpportunity(prospect) {
+
+  if (!prospect) {
+    return null;
+  }
+
+
+  const productInterest =
+    (
+      prospect.product_interest ||
+      ""
+    ).trim();
+
+
+  let primaryProduct = null;
+
+
+  if (productInterest) {
+
+    primaryProduct =
+      AdviserOS.products.find(
+        product => {
+
+          return (
+            product.name.toLowerCase() ===
+            productInterest.toLowerCase()
+          );
+        }
+      );
+  }
+
+
+  const opportunities = [];
+
+
+  if (primaryProduct) {
+
+    const intersections =
+      getProductIntersections(
+        primaryProduct.name
+      );
+
+
+    intersections.forEach(
+      intersection => {
+
+        const complementaryProduct =
+          intersection.productAName ===
+            primaryProduct.name
+
+            ? intersection.productBName
+
+            : intersection.productAName;
+
+
+        const product =
+          getProductByName(
+            complementaryProduct
+          );
+
+
+        if (product) {
+
+          opportunities.push({
+
+            product:
+              product.name,
+
+            category:
+              product.category,
+
+            relationship:
+              intersection.relationship_type,
+
+            explanation:
+              intersection.explanation
+          });
+        }
+      }
+    );
+  }
+
+
+  return {
+
+    prospectId:
+      prospect.id || "",
+
+    prospectName:
+      prospect.full_name ||
+      "Unnamed Prospect",
+
+    organisation:
+      prospect.organisation ||
+      "",
+
+    segment:
+      prospect.segment ||
+      "",
+
+    location:
+      prospect.location ||
+      "",
+
+    stage:
+      prospect.stage ||
+      "",
+
+    priority:
+      prospect.priority ||
+      "",
+
+    productInterest:
+      productInterest,
+
+    estimatedPremium:
+      Number(
+        prospect.estimated_premium
+      ) || 0,
+
+    notes:
+      prospect.notes ||
+      "",
+
+    nextAction:
+      prospect.next_action ||
+      "",
+
+    followUpDate:
+      prospect.follow_up_date ||
+      "",
+
+    primaryProduct:
+      primaryProduct
+        ? primaryProduct.name
+        : productInterest,
+
+    opportunities:
+      opportunities
+  };
+}
+
+
+// ============================================================
+// RUN OPPORTUNITY ENGINE
+// ============================================================
+
+function runOpportunityEngine() {
+
+  if (!AdviserOS.prospects.length) {
+
+    AdviserOS.opportunities = [];
+
+    return [];
+  }
+
+
+  const results =
+    AdviserOS.prospects.map(
+      analyseProspectOpportunity
+    );
+
+
+  const opportunities =
+    results.filter(
+      result => {
+
+        return (
+          result &&
+          result.opportunities &&
+          result.opportunities.length > 0
+        );
+      }
+    );
+
+
+  AdviserOS.opportunities =
+    opportunities;
+
+
+  console.log(
+    "Opportunity Engine:",
+    opportunities.length,
+    "prospects with opportunities."
+  );
+
+
+  return opportunities;
+}
+
+
+// ============================================================
+// OPPORTUNITY SUMMARY
+// ============================================================
+
+function getOpportunitySummary() {
+
+  const opportunities =
+    runOpportunityEngine();
+
+
+  const totalOpportunities =
+    opportunities.reduce(
+      (total, prospect) => {
+
+        return (
+          total +
+          prospect.opportunities.length
+        );
+      },
+      0
+    );
+
+
+  const highPriority =
+    opportunities.filter(
+      prospect => {
+
+        const priority =
+          (
+            prospect.priority ||
+            ""
+          ).toLowerCase();
+
+        return (
+          priority === "high" ||
+          priority === "hot"
+        );
+      }
+    ).length;
+
+
+  return {
+
+    prospects:
+      opportunities.length,
+
+    opportunities:
+      totalOpportunities,
+
+    highPriority:
+      highPriority
+  };
+}
+
+
+// ============================================================
+// INDIVIDUAL PROSPECT OPPORTUNITIES
+// ============================================================
+
+function getProspectOpportunities(
+  prospectId
+) {
+
+  const prospect =
+    AdviserOS.prospects.find(
+      item =>
+        item.id === prospectId
+    );
+
+
+  if (!prospect) {
+    return null;
+  }
+
+
+  return analyseProspectOpportunity(
+    prospect
+  );
+}
+
+
+// ============================================================
+// GENERATE SUGGESTED NEXT MOVE
+// ============================================================
+
+function generateNextMove(opportunity) {
+
+  if (!opportunity) {
+
+    return "Begin a discovery conversation.";
+  }
+
+
+  if (opportunity.nextAction) {
+
+    return opportunity.nextAction;
+  }
+
+
+  const stage =
+    (
+      opportunity.stage ||
+      ""
+    ).toLowerCase();
+
+
+  if (
+    stage.includes("new") ||
+    stage.includes("lead")
+  ) {
+
+    return (
+      "Start with discovery questions " +
+      "before presenting the product."
+    );
+  }
+
+
+  if (
+    stage.includes("quote") ||
+    stage.includes("proposal")
+  ) {
+
+    return (
+      "Follow up on the proposal and " +
+      "address any outstanding questions."
+    );
+  }
+
+
+  if (
+    stage.includes("follow")
+  ) {
+
+    return (
+      "Follow up and identify whether " +
+      "another protection or planning need exists."
+    );
+  }
+
+
+  return (
+    "Explore the primary need, then " +
+    "introduce the complementary opportunity."
+  );
+}
+
+
+// ============================================================
+// OPPORTUNITY CENTRE
+// ============================================================
+
+function createOpportunityCentre() {
+
+  let centre =
+    document.getElementById(
+      "adviser-os-opportunity-centre"
+    );
+
+
+  if (!centre) {
+
+    centre =
+      document.createElement("section");
+
+    centre.id =
+      "adviser-os-opportunity-centre";
+
+
+    const firstScreen =
+      document.querySelector(".screen");
+
+
+    if (firstScreen) {
+
+      firstScreen.parentNode.insertBefore(
+        centre,
+        firstScreen
+      );
+
+    } else {
+
+      document.body.prepend(
+        centre
+      );
+    }
+  }
+
+
+  const opportunities =
+    runOpportunityEngine();
+
+
+  const summary =
+    getOpportunitySummary();
+
+
+  centre.innerHTML = "";
+
+
+  // ========================================================
+  // CENTRE STYLING
+  // ========================================================
+
+  centre.style.cssText = `
+    width: calc(100% - 32px);
+    max-width: 1200px;
+    margin: 20px auto;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+  `;
+
+
+  const panel =
+    document.createElement("div");
+
+
+  panel.style.cssText = `
+    background: #ffffff;
+    border: 1px solid #dfe5ec;
+    border-radius: 16px;
+    padding: 22px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+  `;
+
+
+  // ========================================================
+  // HEADER
+  // ========================================================
+
+  const header =
+    document.createElement("div");
+
+
+  header.style.cssText = `
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  `;
+
+
+  const title =
+    document.createElement("div");
+
+
+  title.innerHTML = `
+    <div style="
+      font-size:12px;
+      font-weight:bold;
+      letter-spacing:1px;
+      color:#667085;
+      text-transform:uppercase;
+      margin-bottom:5px;
+    ">
+      Adviser Intelligence
+    </div>
+
+    <div style="
+      font-size:26px;
+      font-weight:700;
+      color:#172033;
+    ">
+      Opportunity Centre
+    </div>
+
+    <div style="
+      font-size:14px;
+      color:#667085;
+      margin-top:5px;
+    ">
+      Turn prospect information into the next useful conversation.
+    </div>
+  `;
+
+
+  header.appendChild(title);
+
+
+  const refreshButton =
+    document.createElement("button");
+
+
+  refreshButton.textContent =
+    "Refresh Opportunities";
+
+
+  refreshButton.style.cssText = `
+    border:none;
+    border-radius:10px;
+    padding:11px 16px;
+    background:#172033;
+    color:#ffffff;
+    font-weight:600;
+    cursor:pointer;
+  `;
+
+
+  refreshButton.onclick =
+    async function () {
+
+      refreshButton.textContent =
+        "Refreshing...";
+
+      await refreshAdviserOSData();
+
+      createOpportunityCentre();
+    };
+
+
+  header.appendChild(
+    refreshButton
+  );
+
+
+  panel.appendChild(header);
+
+
+  // ========================================================
+  // SUMMARY CARDS
+  // ========================================================
+
+  const summaryGrid =
+    document.createElement("div");
+
+
+  summaryGrid.style.cssText = `
+    display:grid;
+    grid-template-columns:
+      repeat(auto-fit,minmax(150px,1fr));
+    gap:12px;
+    margin-bottom:22px;
+  `;
+
+
+  const summaryCards = [
+
+    {
+      label:"Prospects with Opportunities",
+      value:summary.prospects
+    },
+
+    {
+      label:"Product Connections",
+      value:summary.opportunities
+    },
+
+    {
+      label:"High Priority",
+      value:summary.highPriority
+    },
+
+    {
+      label:"Products Loaded",
+      value:AdviserOS.products.length
+    }
+
+  ];
+
+
+  summaryCards.forEach(card => {
+
+    const item =
+      document.createElement("div");
+
+
+    item.style.cssText = `
+      background:#f7f9fc;
+      border:1px solid #e5e9ef;
+      border-radius:12px;
+      padding:15px;
+    `;
+
+
+    item.innerHTML = `
+
+      <div style="
+        font-size:12px;
+        color:#667085;
+        margin-bottom:7px;
+      ">
+        ${escapeHtml(card.label)}
+      </div>
+
+      <div style="
+        font-size:25px;
+        font-weight:700;
+        color:#172033;
+      ">
+        ${card.value}
+      </div>
+
+    `;
+
+
+    summaryGrid.appendChild(item);
+  });
+
+
+  panel.appendChild(
+    summaryGrid
+  );
+
+
+  // ========================================================
+  // NO OPPORTUNITIES
+  // ========================================================
+
+  if (!opportunities.length) {
+
+    const empty =
+      document.createElement("div");
+
+
+    empty.style.cssText = `
+      padding:25px;
+      text-align:center;
+      border:1px dashed #cbd5e1;
+      border-radius:12px;
+      color:#667085;
+      background:#fafbfc;
+    `;
+
+
+    empty.innerHTML = `
+
+      <div style="
+        font-size:18px;
+        font-weight:700;
+        color:#344054;
+        margin-bottom:7px;
+      ">
+        Opportunity Engine is ready
+      </div>
+
+      <div>
+        Add a product interest to prospects
+        and the engine will identify
+        complementary opportunities.
+      </div>
+
+    `;
+
+
+    panel.appendChild(
+      empty
+    );
+
+  } else {
+
+    // ======================================================
+    // OPPORTUNITY LIST
+    // ======================================================
+
+    const list =
+      document.createElement("div");
+
+
+    list.style.cssText = `
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(280px,1fr));
+      gap:15px;
+    `;
+
+
+    opportunities.forEach(
+      opportunity => {
+
+        const card =
+          document.createElement("div");
+
+
+        const priority =
+          (
+            opportunity.priority ||
+            ""
+          ).toLowerCase();
+
+
+        const isHigh =
+          priority === "high" ||
+          priority === "hot";
+
+
+        card.style.cssText = `
+          border:1px solid #e1e7ef;
+          border-radius:14px;
+          padding:18px;
+          background:#ffffff;
+        `;
+
+
+        let opportunityHtml = "";
+
+
+        opportunity.opportunities.forEach(
+          item => {
+
+            opportunityHtml += `
+
+              <div style="
+                margin-top:12px;
+                padding:12px;
+                background:#f7f9fc;
+                border-radius:10px;
+              ">
+
+                <div style="
+                  font-size:12px;
+                  color:#667085;
+                  margin-bottom:4px;
+                ">
+                  COMPLEMENTARY OPPORTUNITY
+                </div>
+
+                <div style="
+                  font-size:17px;
+                  font-weight:700;
+                  color:#172033;
+                ">
+                  ${escapeHtml(item.product)}
+                </div>
+
+                <div style="
+                  font-size:13px;
+                  color:#667085;
+                  margin-top:5px;
+                ">
+                  ${escapeHtml(
+                    item.explanation ||
+                    "Complementary product opportunity."
+                  )}
+                </div>
+
+              </div>
+
+            `;
+          }
+        );
+
+
+        card.innerHTML = `
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            gap:10px;
+            align-items:flex-start;
+          ">
+
+            <div>
+
+              <div style="
+                font-size:18px;
+                font-weight:700;
+                color:#172033;
+              ">
+                ${escapeHtml(
+                  opportunity.prospectName
+                )}
+              </div>
+
+              <div style="
+                font-size:13px;
+                color:#667085;
+                margin-top:3px;
+              ">
+                ${escapeHtml(
+                  opportunity.organisation ||
+                  opportunity.segment ||
+                  "Prospect"
+                )}
+              </div>
+
+            </div>
+
+            ${
+              isHigh
+                ? `
+                  <span style="
+                    background:#fff4e5;
+                    color:#9a6700;
+                    padding:5px 8px;
+                    border-radius:7px;
+                    font-size:11px;
+                    font-weight:700;
+                  ">
+                    HIGH PRIORITY
+                  </span>
+                `
+                : ""
+            }
+
+          </div>
+
+
+          <div style="
+            margin-top:15px;
+            padding:12px;
+            border-radius:10px;
+            background:#f4f7fb;
+          ">
+
+            <div style="
+              font-size:11px;
+              color:#667085;
+              text-transform:uppercase;
+              letter-spacing:.5px;
+            ">
+              Current Product Interest
+            </div>
+
+            <div style="
+              margin-top:4px;
+              font-size:16px;
+              font-weight:700;
+              color:#172033;
+            ">
+              ${escapeHtml(
+                opportunity.primaryProduct ||
+                opportunity.productInterest ||
+                "Not specified"
+              )}
+            </div>
+
+          </div>
+
+
+          ${
+            opportunity.estimatedPremium > 0
+              ? `
+                <div style="
+                  margin-top:12px;
+                  font-size:13px;
+                  color:#475467;
+                ">
+                  Estimated premium:
+                  <strong>
+                    R${Number(
+                      opportunity.estimatedPremium
+                    ).toLocaleString(
+                      "en-ZA",
+                      {
+                        minimumFractionDigits:2,
+                        maximumFractionDigits:2
+                      }
+                    )}
+                  </strong>
+                </div>
+              `
+              : ""
+          }
+
+
+          ${opportunityHtml}
+
+
+          <div style="
+            margin-top:14px;
+            padding-top:13px;
+            border-top:1px solid #eaecf0;
+          ">
+
+            <div style="
+              font-size:11px;
+              color:#667085;
+              text-transform:uppercase;
+              letter-spacing:.5px;
+            ">
+              Suggested Next Move
+            </div>
+
+            <div style="
+              font-size:13px;
+              line-height:1.5;
+              color:#344054;
+              margin-top:5px;
+            ">
+              ${escapeHtml(
+                generateNextMove(
+                  opportunity
+                )
+              )}
+            </div>
+
+          </div>
+
+        `;
+
+
+        list.appendChild(card);
+      }
+    );
+
+
+    panel.appendChild(
+      list
+    );
+  }
+
+
+  centre.appendChild(
+    panel
+  );
+
+
+  console.log(
+    "Opportunity Centre rendered."
+  );
+}
+
+
+// ============================================================
+// HTML SAFETY HELPER
+// ============================================================
+
+function escapeHtml(value) {
+
+  if (value === null ||
+      value === undefined) {
+
+    return "";
+  }
+
+
+  return String(value)
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+    .replace(
+      /</g,
+      "&lt;"
+    )
+    .replace(
+      />/g,
+      "&gt;"
+    )
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+}
+
+
+// ============================================================
 // SCREEN NAVIGATION
-// ------------------------------------------------------------
+// ============================================================
 
 function navigateTo(screenId) {
 
   const screen =
-    document.getElementById(screenId);
+    document.getElementById(
+      screenId
+    );
+
 
   if (!screen) {
 
@@ -698,55 +1578,58 @@ function navigateTo(screenId) {
     );
 
     return;
-
   }
+
 
   document
     .querySelectorAll(".screen")
     .forEach(item => {
 
-      item.classList.remove("active");
-
+      item.classList.remove(
+        "active"
+      );
     });
 
-  screen.classList.add("active");
+
+  screen.classList.add(
+    "active"
+  );
+
 
   window.scrollTo({
-    top: 0,
-    behavior: "smooth"
+    top:0,
+    behavior:"smooth"
   });
-
 }
 
 
-// ------------------------------------------------------------
-// QUICK ACTIONS
-// ------------------------------------------------------------
-
 function newProspect() {
 
-  navigateTo("prospects");
-
+  navigateTo(
+    "prospects"
+  );
 }
 
 
 function clientDiscovery() {
 
-  navigateTo("client-workspace");
-
+  navigateTo(
+    "client-workspace"
+  );
 }
 
 
 function productIntelligence() {
 
-  navigateTo("product-intelligence");
-
+  navigateTo(
+    "product-intelligence"
+  );
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // REFRESH ALL DATA
-// ------------------------------------------------------------
+// ============================================================
 
 async function refreshAdviserOSData() {
 
@@ -754,15 +1637,12 @@ async function refreshAdviserOSData() {
     "Adviser OS: Refreshing database data..."
   );
 
+
   await loadAdviser();
 
   await loadProspects();
 
   await loadProducts();
-
-  // Important:
-  // Products must load BEFORE intersections
-  // because intersections use product IDs.
 
   await loadProductIntersections();
 
@@ -772,24 +1652,28 @@ async function refreshAdviserOSData() {
 
   await loadSales();
 
+
+  runOpportunityEngine();
+
   updateCommandCentre();
+
 
   console.log(
     "Adviser OS: Database refresh complete."
   );
-
 }
 
 
-// ------------------------------------------------------------
-// INITIALISE APPLICATION
-// ------------------------------------------------------------
+// ============================================================
+// INITIALISE
+// ============================================================
 
 async function initialiseAdviserOS() {
 
   console.log(
     "Adviser OS initialising..."
   );
+
 
   updateCommandCentre();
 
@@ -803,7 +1687,6 @@ async function initialiseAdviserOS() {
   if (connected) {
 
     await refreshAdviserOSData();
-
   }
 
 
@@ -812,16 +1695,29 @@ async function initialiseAdviserOS() {
   updateConnectionDisplay();
 
 
+  // Give the existing page a moment
+  // to finish rendering before adding
+  // the Opportunity Centre.
+
+  setTimeout(
+    function () {
+
+      createOpportunityCentre();
+
+    },
+    500
+  );
+
+
   console.log(
     "Adviser OS initialisation complete."
   );
-
 }
 
 
-// ------------------------------------------------------------
+// ============================================================
 // AUTOMATIC REFRESH
-// ------------------------------------------------------------
+// ============================================================
 
 setInterval(
   async function () {
@@ -830,16 +1726,20 @@ setInterval(
       return;
     }
 
+
     await refreshAdviserOSData();
+
+
+    createOpportunityCentre();
 
   },
   60000
 );
 
 
-// ------------------------------------------------------------
-// START APPLICATION
-// ------------------------------------------------------------
+// ============================================================
+// DOM READY
+// ============================================================
 
 document.addEventListener(
   "DOMContentLoaded",
@@ -851,9 +1751,9 @@ document.addEventListener(
 );
 
 
-// ------------------------------------------------------------
-// GLOBAL ACCESS
-// ------------------------------------------------------------
+// ============================================================
+// GLOBAL FUNCTIONS
+// ============================================================
 
 window.AdviserOS =
   AdviserOS;
@@ -879,441 +1779,6 @@ window.getProductByName =
 window.getProductIntersections =
   getProductIntersections;
 
-
-// ------------------------------------------------------------
-// FINAL LOAD MESSAGE
-// ------------------------------------------------------------
-
-console.log(
-  "Adviser OS app.js loaded successfully."
-);
-
-
-// ------------------------------------------------------------
-// CONNECTION STATUS SAFETY CHECK
-// ------------------------------------------------------------
-
-setTimeout(
-  function () {
-
-    const status =
-      document.getElementById(
-        "connection-status"
-      );
-
-    if (status) {
-
-      status.textContent =
-        AdviserOS.connected
-          ? "● Supabase Connected"
-          : "● Supabase NOT Connected";
-
-    }
-
-  },
-  3000
-);
-// ============================================================
-// ADVISER OS — OPPORTUNITY ENGINE
-// Version 1.0
-// ============================================================
-
-function analyseProspectOpportunity(prospect) {
-  if (!prospect) {
-    return null;
-  }
-
-  const productInterest =
-    (prospect.product_interest || "").trim();
-
-  let primaryProduct = null;
-
-  if (productInterest) {
-    primaryProduct = AdviserOS.products.find(product => {
-      return (
-        product.name.toLowerCase() ===
-        productInterest.toLowerCase()
-      );
-    });
-  }
-
-  const opportunities = [];
-
-  if (primaryProduct) {
-    const intersections =
-      getProductIntersections(primaryProduct.name);
-
-    intersections.forEach(intersection => {
-      const complementaryProduct =
-        intersection.productAName === primaryProduct.name
-          ? intersection.productBName
-          : intersection.productAName;
-
-      const product =
-        getProductByName(complementaryProduct);
-
-      if (product) {
-        opportunities.push({
-          product: product.name,
-          category: product.category,
-          relationship:
-            intersection.relationship_type,
-          explanation:
-            intersection.explanation
-        });
-      }
-    });
-  }
-
-  return {
-    prospectId: prospect.id || "",
-    prospectName: prospect.full_name || "Unnamed Prospect",
-    organisation: prospect.organisation || "",
-    segment: prospect.segment || "",
-    location: prospect.location || "",
-    stage: prospect.stage || "",
-    priority: prospect.priority || "",
-    primaryProduct:
-      primaryProduct ? primaryProduct.name : productInterest,
-    opportunities: opportunities
-  };
-}
-
-
-function runOpportunityEngine() {
-  console.log(
-    "=========================================="
-  );
-
-  console.log(
-    "ADVISER OS — OPPORTUNITY ENGINE"
-  );
-
-  console.log(
-    "=========================================="
-  );
-
-  if (!AdviserOS.prospects.length) {
-    console.log(
-      "No prospects available for analysis."
-    );
-    return [];
-  }
-
-  const results =
-    AdviserOS.prospects.map(
-      analyseProspectOpportunity
-    );
-
-  const opportunities =
-    results.filter(result => {
-      return (
-        result &&
-        result.opportunities &&
-        result.opportunities.length > 0
-      );
-    });
-
-  console.log(
-    "Prospects analysed:",
-    results.length
-  );
-
-  console.log(
-    "Opportunities found:",
-    opportunities.length
-  );
-
-  opportunities.forEach(result => {
-    console.log(
-      "------------------------------------------"
-    );
-
-    console.log(
-      "Prospect:",
-      result.prospectName
-    );
-
-    console.log(
-      "Primary product:",
-      result.primaryProduct
-    );
-
-    result.opportunities.forEach(
-      opportunity => {
-        console.log(
-          "Opportunity:",
-          result.primaryProduct,
-          "+",
-          opportunity.product
-        );
-
-        console.log(
-          "Relationship:",
-          opportunity.relationship
-        );
-
-        console.log(
-          "Reason:",
-          opportunity.explanation
-        );
-      }
-    );
-  });
-
-  return opportunities;
-}
-
-
-function getProspectOpportunities(prospectId) {
-  const prospect =
-    AdviserOS.prospects.find(
-      item => item.id === prospectId
-    );
-
-  if (!prospect) {
-    return null;
-  }
-
-  return analyseProspectOpportunity(prospect);
-}
-
-
-// Make Opportunity Engine available to the browser.
-window.analyseProspectOpportunity =
-  analyseProspectOpportunity;
-
-window.runOpportunityEngine =
-  runOpportunityEngine;
-
-window.getProspectOpportunities =
-  getProspectOpportunities;
-
-console.log(
-  "Adviser OS: Opportunity Engine loaded."
-);
-// ============================================================
-// ADVISER OS — OPPORTUNITY ENGINE
-// Version 1.0
-// ============================================================
-
-function analyseProspectOpportunity(prospect) {
-  if (!prospect) {
-    return null;
-  }
-
-  const productInterest =
-    (prospect.product_interest || "").trim();
-
-  let primaryProduct = null;
-
-  if (productInterest) {
-    primaryProduct = AdviserOS.products.find(product => {
-      return (
-        product.name.toLowerCase() ===
-        productInterest.toLowerCase()
-      );
-    });
-  }
-
-  const opportunities = [];
-
-  if (primaryProduct) {
-    const intersections =
-      getProductIntersections(primaryProduct.name);
-
-    intersections.forEach(intersection => {
-      const complementaryProduct =
-        intersection.productAName === primaryProduct.name
-          ? intersection.productBName
-          : intersection.productAName;
-
-      const product =
-        getProductByName(complementaryProduct);
-
-      if (product) {
-        opportunities.push({
-          product: product.name,
-          category: product.category,
-          relationship:
-            intersection.relationship_type,
-          explanation:
-            intersection.explanation
-        });
-      }
-    });
-  }
-
-  return {
-    prospectId: prospect.id || "",
-    prospectName:
-      prospect.full_name || "Unnamed Prospect",
-
-    organisation:
-      prospect.organisation || "",
-
-    segment:
-      prospect.segment || "",
-
-    location:
-      prospect.location || "",
-
-    stage:
-      prospect.stage || "",
-
-    priority:
-      prospect.priority || "",
-
-    estimatedPremium:
-      Number(prospect.estimated_premium) || 0,
-
-    primaryProduct:
-      primaryProduct
-        ? primaryProduct.name
-        : productInterest,
-
-    opportunities:
-      opportunities
-  };
-}
-
-
-function runOpportunityEngine() {
-  console.log(
-    "=========================================="
-  );
-
-  console.log(
-    "ADVISER OS — OPPORTUNITY ENGINE"
-  );
-
-  console.log(
-    "=========================================="
-  );
-
-  if (!AdviserOS.prospects.length) {
-    console.log(
-      "No prospects available for analysis."
-    );
-
-    return [];
-  }
-
-  const results =
-    AdviserOS.prospects.map(
-      analyseProspectOpportunity
-    );
-
-  const opportunities =
-    results.filter(result => {
-      return (
-        result &&
-        result.opportunities &&
-        result.opportunities.length > 0
-      );
-    });
-
-  console.log(
-    "Prospects analysed:",
-    results.length
-  );
-
-  console.log(
-    "Opportunities found:",
-    opportunities.length
-  );
-
-  opportunities.forEach(result => {
-    console.log(
-      "------------------------------------------"
-    );
-
-    console.log(
-      "Prospect:",
-      result.prospectName
-    );
-
-    console.log(
-      "Primary product:",
-      result.primaryProduct
-    );
-
-    result.opportunities.forEach(
-      opportunity => {
-        console.log(
-          "Opportunity:",
-          result.primaryProduct,
-          "+",
-          opportunity.product
-        );
-
-        console.log(
-          "Relationship:",
-          opportunity.relationship
-        );
-
-        console.log(
-          "Reason:",
-          opportunity.explanation
-        );
-      }
-    );
-  });
-
-  return opportunities;
-}
-
-
-function getProspectOpportunities(prospectId) {
-  const prospect =
-    AdviserOS.prospects.find(
-      item => item.id === prospectId
-    );
-
-  if (!prospect) {
-    return null;
-  }
-
-  return analyseProspectOpportunity(prospect);
-}
-
-
-// ============================================================
-// OPPORTUNITY CENTRE DATA
-// ============================================================
-
-function getOpportunitySummary() {
-  const opportunities =
-    runOpportunityEngine();
-
-  const totalOpportunities =
-    opportunities.reduce(
-      (total, prospect) =>
-        total + prospect.opportunities.length,
-      0
-    );
-
-  const highPriority =
-    opportunities.filter(prospect => {
-      const priority =
-        (prospect.priority || "").toLowerCase();
-
-      return (
-        priority === "high" ||
-        priority === "hot"
-      );
-    }).length;
-
-  return {
-    prospects: opportunities.length,
-    opportunities: totalOpportunities,
-    highPriority: highPriority
-  };
-}
-
-
-// Make Opportunity Engine available globally.
-
 window.analyseProspectOpportunity =
   analyseProspectOpportunity;
 
@@ -1326,6 +1791,38 @@ window.getProspectOpportunities =
 window.getOpportunitySummary =
   getOpportunitySummary;
 
+window.createOpportunityCentre =
+  createOpportunityCentre;
+
+
 console.log(
-  "Adviser OS: Opportunity Engine loaded."
+  "Adviser OS app.js loaded successfully."
+);
+
+
+// ============================================================
+// CONNECTION STATUS FINAL CHECK
+// ============================================================
+
+setTimeout(
+  function () {
+
+    const status =
+      document.getElementById(
+        "connection-status"
+      );
+
+
+    if (status) {
+
+      status.textContent =
+        AdviserOS.connected
+
+          ? "● Supabase Connected"
+
+          : "● Supabase NOT Connected";
+    }
+
+  },
+  3000
 );
