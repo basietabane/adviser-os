@@ -1,6 +1,7 @@
+```javascript
 // ============================================================
 // ADVISER OS — APPLICATION ENGINE
-// Version 2.0
+// Version 3.0
 // ============================================================
 
 console.log("Adviser OS app.js loading...");
@@ -20,9 +21,7 @@ try {
 
     console.log("Adviser OS: Supabase connected.");
   } else {
-    console.warn(
-      "Adviser OS: Supabase configuration not found."
-    );
+    console.warn("Adviser OS: Supabase configuration not found.");
   }
 } catch (error) {
   console.error(
@@ -504,6 +503,72 @@ async function loadSales() {
 
 
 // ============================================================
+// LOAD NEWS
+// ============================================================
+
+async function loadNews() {
+
+  if (!supabaseClient) return;
+
+  try {
+
+    const { data, error } =
+      await supabaseClient
+        .from("news")
+        .select(`
+          id,
+          headline,
+          source,
+          url,
+          category,
+          summary,
+          why_it_matters,
+          published_at,
+          created_at,
+          relevance,
+          product_connection,
+          active
+        `)
+        .eq("active", true)
+        .order("published_at", {
+          ascending: false,
+          nullsFirst: false
+        })
+        .limit(20);
+
+    if (error) {
+
+      console.error(
+        "Adviser OS: News loading failed:",
+        error.message
+      );
+
+      AdviserOS.news = [];
+
+      return;
+    }
+
+    AdviserOS.news =
+      data || [];
+
+    console.log(
+      "News loaded:",
+      AdviserOS.news.length
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Adviser OS: News loading failed.",
+      error
+    );
+
+    AdviserOS.news = [];
+  }
+}
+
+
+// ============================================================
 // COMMAND CENTRE
 // ============================================================
 
@@ -955,6 +1020,600 @@ function generateNextMove(opportunity) {
 
 
 // ============================================================
+// NEWS HELPERS
+// ============================================================
+
+function formatNewsDate(dateValue) {
+
+  if (!dateValue) {
+    return "Date unavailable";
+  }
+
+  try {
+
+    const date =
+      new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+      return "Date unavailable";
+    }
+
+    return date.toLocaleDateString(
+      "en-ZA",
+      {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+      }
+    );
+
+  } catch (error) {
+
+    return "Date unavailable";
+  }
+}
+
+
+function getNewsRelevanceClass(relevance) {
+
+  const value =
+    String(relevance || "")
+      .toLowerCase();
+
+  if (
+    value.includes("high") ||
+    value.includes("critical") ||
+    value.includes("strong")
+  ) {
+    return "high";
+  }
+
+  if (
+    value.includes("medium") ||
+    value.includes("moderate")
+  ) {
+    return "medium";
+  }
+
+  return "normal";
+}
+
+
+function getNewsRelevanceLabel(relevance) {
+
+  if (!relevance) {
+    return "Industry relevance";
+  }
+
+  return String(relevance);
+}
+
+
+// ============================================================
+// NEWS INTELLIGENCE CENTRE
+// ============================================================
+
+function createNewsIntelligence() {
+
+  let centre =
+    document.getElementById(
+      "adviser-os-news-intelligence"
+    );
+
+
+  if (!centre) {
+
+    centre =
+      document.createElement("section");
+
+    centre.id =
+      "adviser-os-news-intelligence";
+
+
+    const opportunityCentre =
+      document.getElementById(
+        "adviser-os-opportunity-centre"
+      );
+
+
+    if (
+      opportunityCentre &&
+      opportunityCentre.parentNode
+    ) {
+
+      opportunityCentre.parentNode.insertBefore(
+        centre,
+        opportunityCentre
+      );
+
+    } else {
+
+      const firstScreen =
+        document.querySelector(".screen");
+
+      if (firstScreen) {
+
+        firstScreen.parentNode.insertBefore(
+          centre,
+          firstScreen
+        );
+
+      } else {
+
+        document.body.prepend(
+          centre
+        );
+      }
+    }
+  }
+
+
+  centre.innerHTML = "";
+
+
+  centre.style.cssText = `
+    width: calc(100% - 32px);
+    max-width: 1200px;
+    margin: 20px auto;
+    box-sizing: border-box;
+  `;
+
+
+  const panel =
+    document.createElement("div");
+
+
+  panel.style.cssText = `
+    background:#ffffff;
+    border:1px solid #dfe5ec;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.06);
+  `;
+
+
+  // ==========================================================
+  // HEADER
+  // ==========================================================
+
+  const header =
+    document.createElement("div");
+
+
+  header.style.cssText = `
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-start;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+  `;
+
+
+  const heading =
+    document.createElement("div");
+
+
+  heading.innerHTML = `
+
+    <div style="
+      font-size:12px;
+      font-weight:bold;
+      letter-spacing:1px;
+      color:#667085;
+      text-transform:uppercase;
+      margin-bottom:5px;
+    ">
+      Market Intelligence
+    </div>
+
+    <div style="
+      font-size:26px;
+      font-weight:700;
+      color:#172033;
+    ">
+      Current Industry News
+    </div>
+
+    <div style="
+      font-size:14px;
+      color:#667085;
+      margin-top:5px;
+      max-width:700px;
+    ">
+      Industry developments connected to your advisory
+      work, products and client conversations.
+    </div>
+
+  `;
+
+
+  header.appendChild(
+    heading
+  );
+
+
+  const countBadge =
+    document.createElement("div");
+
+
+  countBadge.style.cssText = `
+    background:#f4f7fb;
+    border:1px solid #e1e7ef;
+    border-radius:10px;
+    padding:9px 13px;
+    font-size:13px;
+    font-weight:600;
+    color:#344054;
+  `;
+
+
+  countBadge.textContent =
+    `${AdviserOS.news.length} stories`;
+
+
+  header.appendChild(
+    countBadge
+  );
+
+
+  panel.appendChild(
+    header
+  );
+
+
+  // ==========================================================
+  // EMPTY STATE
+  // ==========================================================
+
+  if (!AdviserOS.news.length) {
+
+    const empty =
+      document.createElement("div");
+
+
+    empty.style.cssText = `
+      padding:30px;
+      text-align:center;
+      border:1px dashed #cbd5e1;
+      border-radius:12px;
+      color:#667085;
+      background:#fafbfc;
+    `;
+
+
+    empty.innerHTML = `
+
+      <div style="
+        font-size:18px;
+        font-weight:700;
+        color:#344054;
+        margin-bottom:7px;
+      ">
+        News Intelligence is ready
+      </div>
+
+      <div style="
+        line-height:1.5;
+      ">
+        The news table is connected.
+        Add industry stories to Supabase and
+        they will appear here automatically.
+      </div>
+
+    `;
+
+
+    panel.appendChild(
+      empty
+    );
+
+
+  } else {
+
+    // ========================================================
+    // NEWS GRID
+    // ========================================================
+
+    const grid =
+      document.createElement("div");
+
+
+    grid.style.cssText = `
+      display:grid;
+      grid-template-columns:
+        repeat(auto-fit,minmax(280px,1fr));
+      gap:16px;
+    `;
+
+
+    AdviserOS.news.forEach(
+      article => {
+
+        const card =
+          document.createElement("article");
+
+
+        card.style.cssText = `
+          border:1px solid #e1e7ef;
+          border-radius:14px;
+          overflow:hidden;
+          background:#ffffff;
+          display:flex;
+          flex-direction:column;
+          min-height:250px;
+        `;
+
+
+        const content =
+          document.createElement("div");
+
+
+        content.style.cssText = `
+          padding:18px;
+          display:flex;
+          flex-direction:column;
+          height:100%;
+          box-sizing:border-box;
+        `;
+
+
+        const category =
+          article.category ||
+          "Industry";
+
+
+        const relevance =
+          getNewsRelevanceLabel(
+            article.relevance
+          );
+
+
+        const relevanceClass =
+          getNewsRelevanceClass(
+            article.relevance
+          );
+
+
+        let articleLink = "";
+
+
+        if (article.url) {
+
+          articleLink = `
+
+            <a
+              href="${escapeHtml(article.url)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              style="
+                display:inline-block;
+                margin-top:15px;
+                color:#0b7a68;
+                font-weight:700;
+                text-decoration:none;
+                font-size:13px;
+              "
+            >
+              Read original article →
+            </a>
+
+          `;
+        }
+
+
+        content.innerHTML = `
+
+          <div style="
+            display:flex;
+            justify-content:space-between;
+            gap:8px;
+            align-items:flex-start;
+            margin-bottom:10px;
+          ">
+
+            <span style="
+              background:#f4f7fb;
+              color:#344054;
+              border-radius:7px;
+              padding:5px 8px;
+              font-size:11px;
+              font-weight:700;
+              text-transform:uppercase;
+            ">
+              ${escapeHtml(category)}
+            </span>
+
+            <span style="
+              background:${
+                relevanceClass === "high"
+                  ? "#e8f5f1"
+                  : relevanceClass === "medium"
+                    ? "#fff7e6"
+                    : "#f4f7fb"
+              };
+              color:${
+                relevanceClass === "high"
+                  ? "#08745f"
+                  : relevanceClass === "medium"
+                    ? "#9a6700"
+                    : "#667085"
+              };
+              border-radius:7px;
+              padding:5px 8px;
+              font-size:10px;
+              font-weight:700;
+            ">
+              ${escapeHtml(relevance)}
+            </span>
+
+          </div>
+
+
+          <h3 style="
+            margin:0;
+            font-size:18px;
+            line-height:1.35;
+            color:#172033;
+          ">
+            ${escapeHtml(
+              article.headline ||
+              "Untitled news story"
+            )}
+          </h3>
+
+
+          <div style="
+            margin-top:7px;
+            font-size:12px;
+            color:#667085;
+          ">
+            ${escapeHtml(
+              article.source ||
+              "Industry source"
+            )}
+
+            ·
+
+            ${escapeHtml(
+              formatNewsDate(
+                article.published_at ||
+                article.created_at
+              )
+            )}
+          </div>
+
+
+          ${
+            article.summary
+              ? `
+                <div style="
+                  margin-top:12px;
+                  font-size:13px;
+                  line-height:1.55;
+                  color:#475467;
+                ">
+                  ${escapeHtml(
+                    article.summary
+                  )}
+                </div>
+              `
+              : ""
+          }
+
+
+          ${
+            article.why_it_matters
+              ? `
+                <div style="
+                  margin-top:14px;
+                  padding:12px;
+                  background:#f7f9fc;
+                  border-radius:10px;
+                  border-left:4px solid #c89b3c;
+                ">
+
+                  <div style="
+                    font-size:10px;
+                    font-weight:700;
+                    letter-spacing:.6px;
+                    color:#667085;
+                    text-transform:uppercase;
+                    margin-bottom:5px;
+                  ">
+                    Why it matters
+                  </div>
+
+                  <div style="
+                    font-size:13px;
+                    line-height:1.5;
+                    color:#344054;
+                  ">
+                    ${escapeHtml(
+                      article.why_it_matters
+                    )}
+                  </div>
+
+                </div>
+              `
+              : ""
+          }
+
+
+          ${
+            article.product_connection
+              ? `
+                <div style="
+                  margin-top:10px;
+                  padding:10px 12px;
+                  background:#eef8f5;
+                  border-radius:9px;
+                ">
+
+                  <div style="
+                    font-size:10px;
+                    font-weight:700;
+                    color:#08745f;
+                    text-transform:uppercase;
+                    letter-spacing:.5px;
+                    margin-bottom:4px;
+                  ">
+                    Product Connection
+                  </div>
+
+                  <div style="
+                    font-size:13px;
+                    line-height:1.45;
+                    color:#245c51;
+                  ">
+                    ${escapeHtml(
+                      article.product_connection
+                    )}
+                  </div>
+
+                </div>
+              `
+              : ""
+          }
+
+
+          ${articleLink}
+
+        `;
+
+
+        card.appendChild(
+          content
+        );
+
+
+        grid.appendChild(
+          card
+        );
+
+      }
+    );
+
+
+    panel.appendChild(
+      grid
+    );
+  }
+
+
+  centre.appendChild(
+    panel
+  );
+
+
+  console.log(
+    "News Intelligence rendered:",
+    AdviserOS.news.length
+  );
+}
+
+
+// ============================================================
 // OPPORTUNITY CENTRE
 // ============================================================
 
@@ -975,11 +1634,27 @@ function createOpportunityCentre() {
       "adviser-os-opportunity-centre";
 
 
+    const newsCentre =
+      document.getElementById(
+        "adviser-os-news-intelligence"
+      );
+
+
     const firstScreen =
       document.querySelector(".screen");
 
 
-    if (firstScreen) {
+    if (
+      newsCentre &&
+      newsCentre.parentNode
+    ) {
+
+      newsCentre.parentNode.insertBefore(
+        centre,
+        newsCentre.nextSibling
+      );
+
+    } else if (firstScreen) {
 
       firstScreen.parentNode.insertBefore(
         centre,
@@ -1024,11 +1699,11 @@ function createOpportunityCentre() {
 
 
   panel.style.cssText = `
-    background: #ffffff;
-    border: 1px solid #dfe5ec;
-    border-radius: 16px;
-    padding: 22px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+    background:#ffffff;
+    border:1px solid #dfe5ec;
+    border-radius:16px;
+    padding:22px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.06);
   `;
 
 
@@ -1113,6 +1788,8 @@ function createOpportunityCentre() {
         "Refreshing...";
 
       await refreshAdviserOSData();
+
+      createNewsIntelligence();
 
       createOpportunityCentre();
     };
@@ -1527,34 +2204,21 @@ function createOpportunityCentre() {
 
 function escapeHtml(value) {
 
-  if (value === null ||
-      value === undefined) {
+  if (
+    value === null ||
+    value === undefined
+  ) {
 
     return "";
   }
 
 
   return String(value)
-    .replace(
-      /&/g,
-      "&amp;"
-    )
-    .replace(
-      /</g,
-      "&lt;"
-    )
-    .replace(
-      />/g,
-      "&gt;"
-    )
-    .replace(
-      /"/g,
-      "&quot;"
-    )
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
@@ -1652,6 +2316,8 @@ async function refreshAdviserOSData() {
 
   await loadSales();
 
+  await loadNews();
+
 
   runOpportunityEngine();
 
@@ -1695,12 +2361,10 @@ async function initialiseAdviserOS() {
   updateConnectionDisplay();
 
 
-  // Give the existing page a moment
-  // to finish rendering before adding
-  // the Opportunity Centre.
-
   setTimeout(
     function () {
+
+      createNewsIntelligence();
 
       createOpportunityCentre();
 
@@ -1729,6 +2393,8 @@ setInterval(
 
     await refreshAdviserOSData();
 
+
+    createNewsIntelligence();
 
     createOpportunityCentre();
 
@@ -1794,6 +2460,12 @@ window.getOpportunitySummary =
 window.createOpportunityCentre =
   createOpportunityCentre;
 
+window.loadNews =
+  loadNews;
+
+window.createNewsIntelligence =
+  createNewsIntelligence;
+
 
 console.log(
   "Adviser OS app.js loaded successfully."
@@ -1817,12 +2489,11 @@ setTimeout(
 
       status.textContent =
         AdviserOS.connected
-
           ? "● Supabase Connected"
-
           : "● Supabase NOT Connected";
     }
 
   },
   3000
 );
+```
