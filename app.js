@@ -107,8 +107,8 @@ async function checkSupabaseConnection() {
 
     const { data, error } =
       await supabaseClient
-        .from("profiles")
-        .select("*")
+        .from("news")
+        .select("id")
         .limit(1);
 
     if (error) {
