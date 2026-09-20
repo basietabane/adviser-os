@@ -1,4 +1,3 @@
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -29,6 +28,9 @@
 
   --red:#c94a4a;
   --red-light:#fdecec;
+
+  --orange:#d97920;
+  --orange-light:#fff1e2;
 
   --bg:#f3f6f8;
   --surface:#ffffff;
@@ -444,6 +446,11 @@ textarea{
   color:var(--red);
 }
 
+.badge.orange{
+  background:var(--orange-light);
+  color:var(--orange);
+}
+
 /* =========================================================
    NEWS-READY COMPONENTS
    ========================================================= */
@@ -540,6 +547,244 @@ textarea{
 }
 
 /* =========================================================
+   PROSPECTING RADAR
+   ========================================================= */
+
+.radar-header{
+  background:
+    radial-gradient(circle at 85% 20%,rgba(200,155,60,.20),transparent 30%),
+    linear-gradient(135deg,var(--navy),var(--navy-2));
+  color:white;
+  border-radius:var(--radius);
+  padding:28px;
+  box-shadow:var(--shadow);
+  margin-bottom:20px;
+}
+
+.radar-header h2{
+  margin:0 0 7px;
+  font-size:24px;
+}
+
+.radar-header p{
+  margin:0;
+  color:#b9c8cc;
+  font-size:14px;
+  line-height:1.6;
+}
+
+.radar-flow{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-top:20px;
+}
+
+.radar-flow span{
+  padding:7px 10px;
+  border-radius:20px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.12);
+  color:#e8eeee;
+  font-size:11px;
+  font-weight:700;
+}
+
+.radar-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:20px;
+}
+
+.signal-card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:var(--shadow);
+  margin-bottom:15px;
+  transition:.2s ease;
+}
+
+.signal-card:hover{
+  box-shadow:var(--shadow-hover);
+  transform:translateY(-1px);
+}
+
+.signal-top{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:15px;
+}
+
+.signal-type{
+  font-size:11px;
+  text-transform:uppercase;
+  font-weight:800;
+  letter-spacing:.6px;
+  color:var(--gold);
+}
+
+.signal-card h3{
+  margin:6px 0 7px;
+  font-size:17px;
+}
+
+.signal-location{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.signal-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:12px;
+  margin-top:18px;
+}
+
+.signal-detail{
+  background:var(--surface-2);
+  border-radius:10px;
+  padding:12px;
+}
+
+.signal-detail strong{
+  display:block;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  color:var(--muted);
+  margin-bottom:5px;
+}
+
+.signal-detail span{
+  font-size:13px;
+  line-height:1.45;
+}
+
+.confidence{
+  white-space:nowrap;
+}
+
+.confidence.high{
+  background:var(--green-light);
+  color:var(--green);
+}
+
+.confidence.medium{
+  background:var(--gold-light);
+  color:#76591d;
+}
+
+.confidence.early{
+  background:var(--blue-light);
+  color:var(--blue);
+}
+
+.radar-action{
+  margin-top:16px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+.radar-action-text{
+  color:var(--muted);
+  font-size:12px;
+}
+
+.radar-side-card{
+  background:white;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:20px;
+  box-shadow:var(--shadow);
+  margin-bottom:15px;
+}
+
+.radar-side-card h3{
+  margin-top:0;
+}
+
+.pulse-item{
+  padding:13px 0;
+  border-bottom:1px solid var(--border);
+}
+
+.pulse-item:last-child{
+  border-bottom:none;
+}
+
+.pulse-item strong{
+  display:block;
+  margin-bottom:4px;
+  font-size:14px;
+}
+
+.pulse-item span{
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.5;
+}
+
+.cluster{
+  border-left:4px solid var(--gold);
+  background:#fffdf8;
+}
+
+.cluster h3{
+  color:#76591d;
+}
+
+.review{
+  color:var(--muted);
+  font-size:11px;
+  margin-top:8px;
+}
+
+.evidence{
+  margin-top:17px;
+  padding-top:15px;
+  border-top:1px solid var(--border);
+}
+
+.evidence-grid{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.evidence-box{
+  padding:13px;
+  border-radius:10px;
+}
+
+.evidence-box.fact{
+  background:var(--green-light);
+}
+
+.evidence-box.inference{
+  background:var(--blue-light);
+}
+
+.evidence-box strong{
+  display:block;
+  font-size:10px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+  margin-bottom:5px;
+}
+
+.evidence-box p{
+  margin:0;
+  font-size:12px;
+  line-height:1.5;
+}
+
+/* =========================================================
    MOBILE / TABLET
    ========================================================= */
 
@@ -555,6 +800,10 @@ textarea{
 
   .news-grid{
     grid-template-columns:repeat(2,1fr);
+  }
+
+  .radar-grid{
+    grid-template-columns:1fr;
   }
 
 }
@@ -642,6 +891,11 @@ textarea{
     padding:17px;
   }
 
+  .signal-grid,
+  .evidence-grid{
+    grid-template-columns:1fr;
+  }
+
 }
 
 </style>
@@ -675,6 +929,10 @@ AI Sales Operating System
 
 <button onclick="showScreen('prospects',this)">
 👥 Prospects
+</button>
+
+<button onclick="showScreen('radar',this)">
+🎯 Prospecting Radar
 </button>
 
 <button onclick="showScreen('pipeline',this)">
@@ -876,7 +1134,7 @@ onclick="showScreen('prospects',document.querySelectorAll('.menu button')[2])">
 <br><br>
 
 <button class="button secondary"
-onclick="showScreen('clients',document.querySelectorAll('.menu button')[5])">
+onclick="showScreen('clients',document.querySelectorAll('.menu button')[6])">
 
 + Client Discovery
 
@@ -885,7 +1143,7 @@ onclick="showScreen('clients',document.querySelectorAll('.menu button')[5])">
 <br><br>
 
 <button class="button secondary"
-onclick="showScreen('products',document.querySelectorAll('.menu button')[4])">
+onclick="showScreen('products',document.querySelectorAll('.menu button')[5])">
 
 Product Intelligence
 
@@ -1086,6 +1344,675 @@ placeholder="Search prospects..."
 </div>
 
 </section>
+
+
+<!-- =======================================================
+     PROSPECTING RADAR
+     ======================================================= -->
+
+<section id="radar" class="screen">
+
+<div class="topbar">
+
+<div>
+
+<h1>Prospecting Radar</h1>
+
+<p>
+Local signals, timing intelligence and prospecting opportunities.
+</p>
+
+</div>
+
+<div class="status">
+● Intelligence Layer
+</div>
+
+</div>
+
+
+<!-- RADAR HEADER -->
+
+<div class="radar-header">
+
+<h2>🎯 Prospecting Radar — Mahikeng / Mmabatho</h2>
+
+<p>
+Adviser OS watches public and legitimate business/economic signals,
+separates documented evidence from inference, and converts relevant
+developments into structured prospecting intelligence.
+</p>
+
+<div class="radar-flow">
+
+<span>SIGNAL</span>
+<span>LOCATION</span>
+<span>SEGMENT</span>
+<span>TIMING</span>
+<span>NEED</span>
+<span>PRODUCT</span>
+<span>ACTION</span>
+
+</div>
+
+</div>
+
+
+<div class="radar-grid">
+
+<!-- SIGNAL COLUMN -->
+
+<div>
+
+<div class="card" style="margin-bottom:15px;">
+
+<div style="display:flex;justify-content:space-between;align-items:center;gap:10px;">
+
+<div>
+
+<h3 style="margin:0;">
+Today's Signals
+</h3>
+
+<p class="muted" style="margin:5px 0 0;">
+Signals currently worth monitoring.
+</p>
+
+</div>
+
+<span class="badge green">
+3 Active Signals
+</span>
+
+</div>
+
+</div>
+
+
+<!-- SIGNAL 1 -->
+
+<div class="signal-card">
+
+<div class="signal-top">
+
+<div>
+
+<div class="signal-type">
+Employment Signal
+</div>
+
+<h3>
+Current Office of the Premier recruitment activity
+</h3>
+
+<div class="signal-location">
+📍 Mmabatho
+</div>
+
+</div>
+
+<span class="badge green confidence high">
+High confidence
+</span>
+
+</div>
+
+
+<div class="signal-grid">
+
+<div class="signal-detail">
+
+<strong>Segment</strong>
+
+<span>
+Public-sector professionals and administrative workers
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Timing</strong>
+
+<span>
+Recruitment → selection → appointment → commencement → first-income period
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Potential needs</strong>
+
+<span>
+Financial resilience, protection, savings, investment and medical planning
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Product connection</strong>
+
+<span>
+Needs-based Sanlam product review after client discovery
+</span>
+
+</div>
+
+</div>
+
+
+<div class="evidence">
+
+<div class="evidence-grid">
+
+<div class="evidence-box fact">
+
+<strong>Documented evidence</strong>
+
+<p>
+Published vacancy information confirms active recruitment and positions associated with Mmabatho.
+</p>
+
+</div>
+
+
+<div class="evidence-box inference">
+
+<strong>AI inference</strong>
+
+<p>
+Recruitment creates a potential future employment and financial-transition signal, but applicants are not assumed to have been appointed.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="radar-action">
+
+<div>
+
+<div class="radar-action-text">
+Recommended action: monitor the recruitment cycle and prepare appropriate discovery questions.
+</div>
+
+<div class="review">
+Next review: scheduled intelligence recheck
+</div>
+
+</div>
+
+<button class="button secondary">
+View Intelligence
+</button>
+
+</div>
+
+</div>
+
+
+<!-- SIGNAL 2 -->
+
+<div class="signal-card">
+
+<div class="signal-top">
+
+<div>
+
+<div class="signal-type">
+Employment Signal
+</div>
+
+<h3>
+Cooperative Governance recruitment activity
+</h3>
+
+<div class="signal-location">
+📍 Mmabatho / Mahikeng
+</div>
+
+</div>
+
+<span class="badge green confidence high">
+High confidence
+</span>
+
+</div>
+
+
+<div class="signal-grid">
+
+<div class="signal-detail">
+
+<strong>Segment</strong>
+
+<span>
+Public-sector professionals and administrative workers
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Timing</strong>
+
+<span>
+Recruitment → selection → appointment → possible financial transition
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Potential needs</strong>
+
+<span>
+Protection, savings, investment, medical planning and financial planning
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Product connection</strong>
+
+<span>
+Needs-based product matching after circumstances are established
+</span>
+
+</div>
+
+</div>
+
+
+<div class="evidence">
+
+<div class="evidence-grid">
+
+<div class="evidence-box fact">
+
+<strong>Documented evidence</strong>
+
+<p>
+Published vacancy information confirms a current recruitment cycle involving positions connected to the local area.
+</p>
+
+</div>
+
+
+<div class="evidence-box inference">
+
+<strong>AI inference</strong>
+
+<p>
+The recruitment cycle is a local employment signal; it does not establish which applicants will ultimately be appointed.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="radar-action">
+
+<div>
+
+<div class="radar-action-text">
+Recommended action: track later appointment or commencement signals.
+</div>
+
+<div class="review">
+Next review: scheduled intelligence recheck
+</div>
+
+</div>
+
+<button class="button secondary">
+View Intelligence
+</button>
+
+</div>
+
+</div>
+
+
+<!-- SIGNAL 3 -->
+
+<div class="signal-card">
+
+<div class="signal-top">
+
+<div>
+
+<div class="signal-type">
+Economic Signal
+</div>
+
+<h3>
+South African household affordability signal
+</h3>
+
+<div class="signal-location">
+📍 South Africa / North West
+</div>
+
+</div>
+
+<span class="badge green confidence high">
+High confidence
+</span>
+
+</div>
+
+
+<div class="signal-grid">
+
+<div class="signal-detail">
+
+<strong>Segment</strong>
+
+<span>
+Salaried households and consumers
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Timing</strong>
+
+<span>
+Current and ongoing
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Potential needs</strong>
+
+<span>
+Financial resilience, protection, savings and appropriate investment planning
+</span>
+
+</div>
+
+
+<div class="signal-detail">
+
+<strong>Product connection</strong>
+
+<span>
+Affordability and needs assessment before recommendations
+</span>
+
+</div>
+
+</div>
+
+
+<div class="evidence">
+
+<div class="evidence-grid">
+
+<div class="evidence-box fact">
+
+<strong>Documented evidence</strong>
+
+<p>
+Recent South African consumer indicators show household finances remain sensitive to economic pressures.
+</p>
+
+</div>
+
+
+<div class="evidence-box inference">
+
+<strong>AI inference</strong>
+
+<p>
+Financial priorities and affordability may be particularly important when discussing additional commitments.
+</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<div class="radar-action">
+
+<div>
+
+<div class="radar-action-text">
+Recommended action: adapt discovery conversations to current household priorities.
+</div>
+
+<div class="review">
+Next review: scheduled intelligence recheck
+</div>
+
+</div>
+
+<button class="button secondary">
+View Intelligence
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- RIGHT COLUMN -->
+
+<div>
+
+
+<!-- TERRITORY PULSE -->
+
+<div class="radar-side-card">
+
+<h3>
+📍 Territory Pulse
+</h3>
+
+<p class="muted">
+Current intelligence clusters across your operating territory.
+</p>
+
+
+<div class="pulse-item">
+
+<strong>Mmabatho</strong>
+
+<span>
+Government • Professional services • Education • Healthcare • Business services
+</span>
+
+</div>
+
+
+<div class="pulse-item">
+
+<strong>Mahikeng</strong>
+
+<span>
+Retail • Small business • Services • Transport/logistics • Informal economy
+</span>
+
+</div>
+
+
+<div class="pulse-item">
+
+<strong>Wider North West</strong>
+
+<span>
+Mining • Agriculture • Public sector • Manufacturing • Professional services
+</span>
+
+</div>
+
+</div>
+
+
+<!-- CLUSTER -->
+
+<div class="radar-side-card cluster">
+
+<h3>
+⚡ Local Cluster Detected
+</h3>
+
+<p class="muted">
+
+Multiple public-sector recruitment signals are currently connected
+to the Mmabatho / Mahikeng area.
+
+</p>
+
+<p class="muted">
+
+The system should monitor these signals together rather than
+treating each vacancy as an isolated event.
+
+</p>
+
+<span class="badge">
+Cluster monitoring
+</span>
+
+</div>
+
+
+<!-- TIMING -->
+
+<div class="radar-side-card">
+
+<h3>
+⏱️ Timing Engine
+</h3>
+
+<div class="pulse-item">
+
+<strong>1. Detected</strong>
+
+<span>
+Public signal identified.
+</span>
+
+</div>
+
+<div class="pulse-item">
+
+<strong>2. Developing</strong>
+
+<span>
+Signal continues or additional evidence appears.
+</span>
+
+</div>
+
+<div class="pulse-item">
+
+<strong>3. Event occurring</strong>
+
+<span>
+Appointment, commencement or other documented event.
+</span>
+
+</div>
+
+<div class="pulse-item">
+
+<strong>4. Financial transition</strong>
+
+<span>
+Potential period where financial circumstances may change.
+</span>
+
+</div>
+
+<div class="pulse-item">
+
+<strong>5. Follow-up window</strong>
+
+<span>
+Reassess the signal using updated public information.
+</span>
+
+</div>
+
+</div>
+
+
+<!-- SIGNAL SCALE -->
+
+<div class="radar-side-card">
+
+<h3>
+Signal Strength
+</h3>
+
+<div class="pulse-item">
+
+<strong>
+<span class="badge green">Strong</span>
+</strong>
+
+<span>
+Recent, local and supported by multiple independent indicators.
+</span>
+
+</div>
+
+<div class="pulse-item">
+
+<strong>
+<span class="badge">Moderate</span>
+</strong>
+
+<span>
+Reliable signal with a reasonable connection but less timing certainty.
+</span>
+
+</div>
+
+<div class="pulse-item">
+
+<strong>
+<span class="badge blue">Early signal</span>
+</strong>
+
+<span>
+Interesting development with limited evidence requiring monitoring.
+</span>
+
+</div>
+
+</div>
+
+</div>
+
+</div>
 
 
 <!-- PIPELINE -->
@@ -1651,5 +2578,4 @@ function showScreen(id,button){
 <script src="app.js"></script>
 
 </body>
-</html>
-```
+   </html>
