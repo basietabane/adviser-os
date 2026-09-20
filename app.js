@@ -1,712 +1,645 @@
 // ============================================================
 // ADVISER OS — APPLICATION ENGINE
-// Version 4.0
-// Live Prospecting Radar + News + Opportunity Centre
+// Version 5.0
+// Live Intelligence + Prospecting Radar + News + Opportunities
 // ============================================================
 
-console.log("Adviser OS app.js loading...");
+console.log("Adviser OS v5 loading...");
 
 let supabaseClient = null;
 
 try {
+
   if (
     window.supabase &&
     window.SUPABASE_URL &&
     window.SUPABASE_PUBLISHABLE_KEY
   ) {
+
     supabaseClient = window.supabase.createClient(
       window.SUPABASE_URL,
       window.SUPABASE_PUBLISHABLE_KEY
     );
 
     console.log("Adviser OS: Supabase connected.");
+
   } else {
-    console.warn("Adviser OS: Supabase configuration not found.");
+
+    console.warn(
+      "Adviser OS: Supabase configuration not found."
+    );
+
   }
-} catch (error) {
+
+} catch(error){
+
   console.error(
     "Adviser OS: Supabase connection failed.",
     error
   );
+
 }
 
 
 // ============================================================
-// CENTRAL APPLICATION STATE
+// STATE
 // ============================================================
 
 const AdviserOS = {
 
-  connected: false,
+  connected:false,
 
-  adviser: {
-    id: "",
-    name: "",
-    email: "",
-    phone: "",
-    target: 13,
-    sales: 0
+  adviser:{
+    id:"",
+    name:"",
+    email:"",
+    phone:"",
+    target:13,
+    sales:0
   },
 
-  prospects: [],
-
-  products: [],
-
-  productIntersections: [],
-
-  ideas: [],
-
-  news: [],
-
-  prospectingSignals: [],
-
-  territorySignals: [],
-
-  activities: [],
-
-  appointments: [],
-
-  opportunities: []
+  prospects:[],
+  products:[],
+  productIntersections:[],
+  ideas:[],
+  news:[],
+  prospectingSignals:[],
+  territorySignals:[],
+  activities:[],
+  appointments:[],
+  opportunities:[]
 };
 
 
 // ============================================================
-// CONNECTION STATUS
+// HELPERS
 // ============================================================
 
-function updateConnectionDisplay() {
+function escapeHtml(value){
 
-  const statusElements =
-    document.querySelectorAll(
-      ".connection-status, #connection-status, [data-connection-status]"
-    );
+  if(value===null || value===undefined){
+    return "";
+  }
 
-  statusElements.forEach(element => {
+  return String(value)
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
 
-    element.textContent =
+
+function safeText(value,fallback="Not available"){
+
+  if(
+    value===null ||
+    value===undefined ||
+    String(value).trim()===""
+  ){
+    return fallback;
+  }
+
+  return String(value);
+}
+
+
+function formatDate(value){
+
+  if(!value){
+    return "Date unavailable";
+  }
+
+  const date=new Date(value);
+
+  if(Number.isNaN(date.getTime())){
+    return "Date unavailable";
+  }
+
+  return date.toLocaleDateString(
+    "en-ZA",
+    {
+      day:"numeric",
+      month:"short",
+      year:"numeric"
+    }
+  );
+}
+
+
+function confidenceInfo(value){
+
+  const v=String(value||"").toLowerCase();
+
+  if(v==="high"){
+
+    return {
+      className:"high",
+      background:"#e8f7f2",
+      color:"#087c68",
+      label:"HIGH CONFIDENCE"
+    };
+
+  }
+
+  if(v==="medium" || v==="moderate"){
+
+    return {
+      className:"medium",
+      background:"#fff7df",
+      color:"#8b681e",
+      label:"MODERATE CONFIDENCE"
+    };
+
+  }
+
+  return {
+    className:"early",
+    background:"#edf3ff",
+    color:"#316bd6",
+    label:"EARLY SIGNAL"
+  };
+}
+
+
+// ============================================================
+// CONNECTION
+// ============================================================
+
+function updateConnectionDisplay(){
+
+  const elements=document.querySelectorAll(
+    ".connection-status,#connection-status,[data-connection-status]"
+  );
+
+  elements.forEach(element=>{
+
+    element.textContent=
       AdviserOS.connected
         ? "● Supabase Connected"
         : "● Prototype Online";
 
   });
+
 }
 
 
-// ============================================================
-// SUPABASE CONNECTION
-// ============================================================
+async function checkSupabaseConnection(){
 
-async function checkSupabaseConnection() {
+  if(!supabaseClient){
 
-  if (!supabaseClient) {
-
-    AdviserOS.connected = false;
-
+    AdviserOS.connected=false;
     updateConnectionDisplay();
-
     return false;
+
   }
 
-  try {
+  try{
 
-    const { data, error } =
-      await supabaseClient
-        .from("news")
-        .select("id")
-        .limit(1);
+    const {error}=await supabaseClient
+      .from("news")
+      .select("id")
+      .limit(1);
 
-    if (error) {
+    if(error){
 
       console.error(
         "Adviser OS: Supabase test failed:",
         error.message
       );
 
-      AdviserOS.connected = false;
-
+      AdviserOS.connected=false;
       updateConnectionDisplay();
 
       return false;
     }
 
-    AdviserOS.connected = true;
-
+    AdviserOS.connected=true;
     updateConnectionDisplay();
-
-    console.log(
-      "Adviser OS: Supabase database connected."
-    );
 
     return true;
 
-  } catch (error) {
+  }catch(error){
+
+    AdviserOS.connected=false;
+    updateConnectionDisplay();
 
     console.error(
-      "Adviser OS: Connection test failed.",
+      "Adviser OS: connection test failed.",
       error
     );
-
-    AdviserOS.connected = false;
-
-    updateConnectionDisplay();
 
     return false;
   }
+
 }
 
 
 // ============================================================
-// LOAD ADVISER
+// DATA LOADERS
 // ============================================================
 
-async function loadAdviser() {
+async function loadAdviser(){
 
-  if (!supabaseClient) return;
+  if(!supabaseClient)return;
 
-  try {
+  try{
 
-    const { data, error } =
-      await supabaseClient
-        .from("advisers")
-        .select("*")
-        .limit(1);
+    const {data,error}=await supabaseClient
+      .from("advisers")
+      .select("*")
+      .limit(1);
 
-    if (error) {
-
-      console.error(
-        "Adviser OS: Adviser loading failed:",
-        error.message
-      );
-
+    if(error){
+      console.warn("Adviser loading failed:",error.message);
       return;
     }
 
-    if (data && data.length > 0) {
+    if(data && data.length){
 
-      const adviser = data[0];
+      const adviser=data[0];
 
-      AdviserOS.adviser.id =
-        adviser.id || "";
+      AdviserOS.adviser.id=adviser.id||"";
+      AdviserOS.adviser.name=adviser.full_name||"";
+      AdviserOS.adviser.email=adviser.email||"";
+      AdviserOS.adviser.phone=adviser.phone||"";
+      AdviserOS.adviser.target=
+        Number(adviser.target_sales)||13;
 
-      AdviserOS.adviser.name =
-        adviser.full_name || "";
-
-      AdviserOS.adviser.email =
-        adviser.email || "";
-
-      AdviserOS.adviser.phone =
-        adviser.phone || "";
-
-      AdviserOS.adviser.target =
-        Number(adviser.target_sales) || 13;
-
-      console.log(
-        "Adviser loaded:",
-        AdviserOS.adviser.name
-      );
     }
 
-  } catch (error) {
+  }catch(error){
 
-    console.error(
-      "Adviser OS: Adviser loading failed.",
-      error
-    );
+    console.error("Adviser loading failed.",error);
+
   }
+
 }
 
 
-// ============================================================
-// LOAD PROSPECTS
-// ============================================================
+async function loadProspects(){
 
-async function loadProspects() {
+  if(!supabaseClient)return;
 
-  if (!supabaseClient) return;
+  try{
 
-  try {
+    const {data,error}=await supabaseClient
+      .from("prospects")
+      .select("*");
 
-    const { data, error } =
-      await supabaseClient
-        .from("prospects")
-        .select("*");
-
-    if (error) {
-
-      console.error(
-        "Adviser OS: Prospect loading failed:",
-        error.message
-      );
-
-      AdviserOS.prospects = [];
-
-      return;
-    }
-
-    AdviserOS.prospects =
-      data || [];
-
-    console.log(
-      "Prospects loaded:",
-      AdviserOS.prospects.length
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Adviser OS: Prospect loading failed.",
-      error
-    );
-
-    AdviserOS.prospects = [];
-  }
-}
-
-
-// ============================================================
-// LOAD PRODUCTS
-// ============================================================
-
-async function loadProducts() {
-
-  if (!supabaseClient) return;
-
-  try {
-
-    const { data, error } =
-      await supabaseClient
-        .from("products")
-        .select("*")
-        .eq("active", true)
-        .order("name");
-
-    if (error) {
-
-      console.error(
-        "Adviser OS: Product loading failed:",
-        error.message
-      );
-
-      AdviserOS.products = [];
-
-      return;
-    }
-
-    AdviserOS.products =
-      data || [];
-
-    console.log(
-      "Products loaded:",
-      AdviserOS.products.length
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Adviser OS: Product loading failed.",
-      error
-    );
-
-    AdviserOS.products = [];
-  }
-}
-
-
-// ============================================================
-// LOAD PRODUCT INTERSECTIONS
-// ============================================================
-
-async function loadProductIntersections() {
-
-  if (!supabaseClient) return;
-
-  try {
-
-    const { data, error } =
-      await supabaseClient
-        .from("product_intersections")
-        .select("*")
-        .eq("active", true);
-
-    if (error) {
-
-      console.error(
-        "Adviser OS: Product intersection loading failed:",
-        error.message
-      );
-
-      AdviserOS.productIntersections = [];
-
-      return;
-    }
-
-    AdviserOS.productIntersections =
-      (data || []).map(intersection => {
-
-        const productA =
-          AdviserOS.products.find(
-            product =>
-              product.id ===
-              intersection.product_a_id
-          );
-
-        const productB =
-          AdviserOS.products.find(
-            product =>
-              product.id ===
-              intersection.product_b_id
-          );
-
-        return {
-          ...intersection,
-
-          productAName:
-            productA
-              ? productA.name
-              : "Unknown Product",
-
-          productBName:
-            productB
-              ? productB.name
-              : "Unknown Product"
-        };
-      });
-
-    console.log(
-      "Product intersections loaded:",
-      AdviserOS.productIntersections.length
-    );
-
-  } catch (error) {
-
-    console.error(
-      "Adviser OS: Product intersection loading failed.",
-      error
-    );
-
-    AdviserOS.productIntersections = [];
-  }
-}
-
-
-// ============================================================
-// LOAD ACTIVITIES
-// ============================================================
-
-async function loadActivities() {
-
-  if (!supabaseClient) return;
-
-  try {
-
-    const { data, error } =
-      await supabaseClient
-        .from("activities")
-        .select("*");
-
-    if (error) {
+    if(error){
 
       console.warn(
-        "Activities could not be loaded:",
+        "Prospect loading failed:",
         error.message
       );
 
-      AdviserOS.activities = [];
-
+      AdviserOS.prospects=[];
       return;
     }
 
-    AdviserOS.activities =
-      data || [];
+    AdviserOS.prospects=data||[];
 
-  } catch (error) {
+  }catch(error){
 
-    AdviserOS.activities = [];
+    AdviserOS.prospects=[];
+
   }
+
 }
 
 
-// ============================================================
-// LOAD APPOINTMENTS
-// ============================================================
+async function loadProducts(){
 
-async function loadAppointments() {
+  if(!supabaseClient)return;
 
-  if (!supabaseClient) return;
+  try{
 
-  try {
+    const {data,error}=await supabaseClient
+      .from("products")
+      .select("*")
+      .eq("active",true)
+      .order("name");
 
-    const { data, error } =
-      await supabaseClient
-        .from("appointments")
-        .select("*");
-
-    if (error) {
+    if(error){
 
       console.warn(
-        "Appointments could not be loaded:",
+        "Product loading failed:",
         error.message
       );
 
-      AdviserOS.appointments = [];
-
+      AdviserOS.products=[];
       return;
     }
 
-    AdviserOS.appointments =
-      data || [];
+    AdviserOS.products=data||[];
 
-  } catch (error) {
+  }catch(error){
 
-    AdviserOS.appointments = [];
+    AdviserOS.products=[];
+
   }
+
 }
 
 
-// ============================================================
-// LOAD SALES
-// ============================================================
+async function loadProductIntersections(){
 
-async function loadSales() {
+  if(!supabaseClient)return;
 
-  if (!supabaseClient) return;
+  try{
 
-  try {
+    const {data,error}=await supabaseClient
+      .from("product_intersections")
+      .select("*")
+      .eq("active",true);
 
-    const { data, error } =
-      await supabaseClient
-        .from("sales")
-        .select("*");
-
-    if (error) {
+    if(error){
 
       console.warn(
-        "Sales could not be loaded:",
+        "Product intersections failed:",
+        error.message
+      );
+
+      AdviserOS.productIntersections=[];
+      return;
+    }
+
+    AdviserOS.productIntersections=(data||[]).map(item=>{
+
+      const a=AdviserOS.products.find(
+        product=>product.id===item.product_a_id
+      );
+
+      const b=AdviserOS.products.find(
+        product=>product.id===item.product_b_id
+      );
+
+      return {
+        ...item,
+        productAName:a ? a.name : "Unknown Product",
+        productBName:b ? b.name : "Unknown Product"
+      };
+
+    });
+
+  }catch(error){
+
+    AdviserOS.productIntersections=[];
+
+  }
+
+}
+
+
+async function loadActivities(){
+
+  if(!supabaseClient)return;
+
+  try{
+
+    const {data,error}=await supabaseClient
+      .from("activities")
+      .select("*");
+
+    if(error){
+
+      AdviserOS.activities=[];
+      return;
+    }
+
+    AdviserOS.activities=data||[];
+
+  }catch(error){
+
+    AdviserOS.activities=[];
+
+  }
+
+}
+
+
+async function loadAppointments(){
+
+  if(!supabaseClient)return;
+
+  try{
+
+    const {data,error}=await supabaseClient
+      .from("appointments")
+      .select("*");
+
+    if(error){
+
+      AdviserOS.appointments=[];
+      return;
+    }
+
+    AdviserOS.appointments=data||[];
+
+  }catch(error){
+
+    AdviserOS.appointments=[];
+
+  }
+
+}
+
+
+async function loadSales(){
+
+  if(!supabaseClient)return;
+
+  try{
+
+    const {data,error}=await supabaseClient
+      .from("sales")
+      .select("*");
+
+    if(error){
+
+      console.warn(
+        "Sales loading failed:",
         error.message
       );
 
       return;
     }
 
-    AdviserOS.adviser.sales =
-      (data || []).length;
+    AdviserOS.adviser.sales=(data||[]).length;
 
-  } catch (error) {
+  }catch(error){
 
     console.warn(
       "Sales loading failed.",
       error
     );
+
   }
+
 }
 
 
-// ============================================================
-// LOAD NEWS
-// ============================================================
+async function loadNews(){
 
-async function loadNews() {
+  if(!supabaseClient)return;
 
-  if (!supabaseClient) return;
+  try{
 
-  try {
+    const {data,error}=await supabaseClient
+      .from("news")
+      .select(`
+        id,
+        headline,
+        source,
+        url,
+        category,
+        summary,
+        why_it_matters,
+        published_at,
+        created_at,
+        relevance,
+        product_connection,
+        active
+      `)
+      .eq("active",true)
+      .order(
+        "published_at",
+        {
+          ascending:false,
+          nullsFirst:false
+        }
+      )
+      .limit(20);
 
-    const { data, error } =
-      await supabaseClient
-        .from("news")
-        .select(`
-          id,
-          headline,
-          source,
-          url,
-          category,
-          summary,
-          why_it_matters,
-          published_at,
-          created_at,
-          relevance,
-          product_connection,
-          active
-        `)
-        .eq("active", true)
-        .order("published_at", {
-          ascending: false,
-          nullsFirst: false
-        })
-        .limit(20);
+    if(error){
 
-    if (error) {
-
-      console.error(
-        "Adviser OS: News loading failed:",
+      console.warn(
+        "News loading failed:",
         error.message
       );
 
-      AdviserOS.news = [];
-
+      AdviserOS.news=[];
       return;
     }
 
-    AdviserOS.news =
-      data || [];
+    AdviserOS.news=data||[];
 
-    console.log(
-      "News loaded:",
-      AdviserOS.news.length
-    );
+  }catch(error){
 
-  } catch (error) {
+    AdviserOS.news=[];
 
-    console.error(
-      "Adviser OS: News loading failed.",
-      error
-    );
-
-    AdviserOS.news = [];
   }
+
 }
 
 
-// ============================================================
-// LOAD PROSPECTING SIGNALS
-// ============================================================
+async function loadProspectingSignals(){
 
-async function loadProspectingSignals() {
+  if(!supabaseClient)return;
 
-  if (!supabaseClient) return;
+  try{
 
-  try {
+    const {data,error}=await supabaseClient
+      .from("prospecting_signals")
+      .select(`
+        id,
+        title,
+        signal_type,
+        location,
+        segment,
+        source,
+        source_url,
+        detected_at,
+        event_date,
+        estimated_start_date,
+        estimated_financial_window,
+        summary,
+        evidence,
+        inference,
+        potential_needs,
+        product_connection,
+        action,
+        confidence,
+        status,
+        active,
+        next_review_at
+      `)
+      .eq("active",true)
+      .order("detected_at",{ascending:false});
 
-    const { data, error } =
-      await supabaseClient
-        .from("prospecting_signals")
-        .select(`
-          id,
-          title,
-          signal_type,
-          location,
-          segment,
-          source,
-          source_url,
-          detected_at,
-          event_date,
-          estimated_start_date,
-          estimated_financial_window,
-          summary,
-          evidence,
-          inference,
-          potential_needs,
-          product_connection,
-          action,
-          confidence,
-          status,
-          active,
-          next_review_at
-        `)
-        .eq("active", true)
-        .order("detected_at", {
-          ascending: false
-        });
+    if(error){
 
-    if (error) {
-
-      console.error(
-        "Adviser OS: Prospecting signals loading failed:",
+      console.warn(
+        "Prospecting signal loading failed:",
         error.message
       );
 
-      AdviserOS.prospectingSignals = [];
-
+      AdviserOS.prospectingSignals=[];
       return;
     }
 
-    AdviserOS.prospectingSignals =
-      data || [];
+    AdviserOS.prospectingSignals=data||[];
 
-    console.log(
-      "Prospecting signals loaded:",
-      AdviserOS.prospectingSignals.length
-    );
+  }catch(error){
 
-  } catch (error) {
+    AdviserOS.prospectingSignals=[];
 
-    console.error(
-      "Adviser OS: Prospecting signals loading failed.",
-      error
-    );
-
-    AdviserOS.prospectingSignals = [];
   }
+
 }
 
 
-// ============================================================
-// LOAD TERRITORY SIGNALS
-// ============================================================
+async function loadTerritorySignals(){
 
-async function loadTerritorySignals() {
+  if(!supabaseClient)return;
 
-  if (!supabaseClient) return;
+  try{
 
-  try {
+    const {data,error}=await supabaseClient
+      .from("territory_signals")
+      .select(`
+        id,
+        territory,
+        industry,
+        signal_type,
+        title,
+        summary,
+        evidence,
+        inference,
+        affected_segment,
+        potential_needs,
+        product_connection,
+        timing,
+        confidence,
+        source,
+        source_url,
+        detected_at,
+        active,
+        next_review_at
+      `)
+      .eq("active",true)
+      .order("detected_at",{ascending:false});
 
-    const { data, error } =
-      await supabaseClient
-        .from("territory_signals")
-        .select(`
-          id,
-          territory,
-          industry,
-          signal_type,
-          title,
-          summary,
-          evidence,
-          inference,
-          affected_segment,
-          potential_needs,
-          product_connection,
-          timing,
-          confidence,
-          source,
-          source_url,
-          detected_at,
-          active,
-          next_review_at
-        `)
-        .eq("active", true)
-        .order("detected_at", {
-          ascending: false
-        });
+    if(error){
 
-    if (error) {
-
-      console.error(
-        "Adviser OS: Territory signals loading failed:",
+      console.warn(
+        "Territory signal loading failed:",
         error.message
       );
 
-      AdviserOS.territorySignals = [];
-
+      AdviserOS.territorySignals=[];
       return;
     }
 
-    AdviserOS.territorySignals =
-      data || [];
+    AdviserOS.territorySignals=data||[];
 
-    console.log(
-      "Territory signals loaded:",
-      AdviserOS.territorySignals.length
-    );
+  }catch(error){
 
-  } catch (error) {
+    AdviserOS.territorySignals=[];
 
-    console.error(
-      "Adviser OS: Territory signals loading failed.",
-      error
-    );
-
-    AdviserOS.territorySignals = [];
   }
+
 }
 
 
@@ -714,754 +647,523 @@ async function loadTerritorySignals() {
 // COMMAND CENTRE
 // ============================================================
 
-function updateCommandCentre() {
+function updateCommandCentre(){
 
-  const targetElement =
-    document.querySelector("[data-cycle-target]");
+  const target=document.querySelector("[data-cycle-target]");
+  const sales=document.querySelector("[data-sales]");
+  const prospects=document.querySelector("[data-active-prospects]");
+  const hot=document.querySelector("[data-hot-leads]");
 
-  const salesElement =
-    document.querySelector("[data-sales]");
-
-  const prospectElement =
-    document.querySelector("[data-active-prospects]");
-
-  const hotLeadElement =
-    document.querySelector("[data-hot-leads]");
-
-
-  if (targetElement) {
-
-    targetElement.textContent =
-      AdviserOS.adviser.target;
+  if(target){
+    target.textContent=AdviserOS.adviser.target;
   }
 
-
-  if (salesElement) {
-
-    salesElement.textContent =
-      AdviserOS.adviser.sales;
+  if(sales){
+    sales.textContent=AdviserOS.adviser.sales;
   }
 
-
-  if (prospectElement) {
-
-    prospectElement.textContent =
-      AdviserOS.prospects.length;
+  if(prospects){
+    prospects.textContent=AdviserOS.prospects.length;
   }
 
+  if(hot){
 
-  if (hotLeadElement) {
+    const count=AdviserOS.prospects.filter(p=>{
 
-    const hotLeads =
-      AdviserOS.prospects.filter(
-        prospect => {
-
-          return (
-            prospect.hot === true ||
-            prospect.hot === "true" ||
-            prospect.priority === "hot" ||
-            prospect.priority === "Hot" ||
-            prospect.priority === "HIGH" ||
-            prospect.priority === "High" ||
-            prospect.status === "hot" ||
-            prospect.status === "Hot"
-          );
-        }
-      ).length;
-
-    hotLeadElement.textContent =
-      hotLeads;
-  }
-}
-
-
-// ============================================================
-// PRODUCT HELPERS
-// ============================================================
-
-function getProductByName(name) {
-
-  if (!name) return null;
-
-  return AdviserOS.products.find(
-    product =>
-      String(product.name || "").toLowerCase() ===
-      String(name).toLowerCase()
-  ) || null;
-}
-
-
-function getProductIntersections(productName) {
-
-  if (!productName) return [];
-
-  return AdviserOS.productIntersections.filter(
-    intersection => {
+      const priority=String(p.priority||"").toLowerCase();
+      const status=String(p.status||"").toLowerCase();
 
       return (
-        intersection.productAName === productName ||
-        intersection.productBName === productName
+        p.hot===true ||
+        p.hot==="true" ||
+        priority==="hot" ||
+        priority==="high" ||
+        status==="hot"
       );
-    }
-  );
+
+    }).length;
+
+    hot.textContent=count;
+  }
+
 }
 
 
 // ============================================================
-// OPPORTUNITY ANALYSIS
+// PRODUCT INTELLIGENCE
 // ============================================================
 
-function analyseProspectOpportunity(prospect) {
+function getProductByName(name){
 
-  if (!prospect) {
-    return null;
-  }
+  if(!name)return null;
 
-  const productInterest =
-    (prospect.product_interest || "").trim();
+  return AdviserOS.products.find(
+    product=>
+      String(product.name||"").toLowerCase()===
+      String(name).toLowerCase()
+  )||null;
 
-  let primaryProduct = null;
+}
 
-  if (productInterest) {
 
-    primaryProduct =
-      AdviserOS.products.find(
-        product =>
-          String(product.name || "").toLowerCase() ===
-          productInterest.toLowerCase()
-      );
-  }
+function getProductIntersections(productName){
 
-  const opportunities = [];
+  if(!productName)return [];
 
-  if (primaryProduct) {
+  return AdviserOS.productIntersections.filter(item=>{
 
-    const intersections =
-      getProductIntersections(
-        primaryProduct.name
-      );
-
-    intersections.forEach(
-      intersection => {
-
-        const complementaryProduct =
-          intersection.productAName ===
-            primaryProduct.name
-            ? intersection.productBName
-            : intersection.productAName;
-
-        const product =
-          getProductByName(
-            complementaryProduct
-          );
-
-        if (product) {
-
-          opportunities.push({
-
-            product:
-              product.name,
-
-            category:
-              product.category,
-
-            relationship:
-              intersection.relationship_type,
-
-            explanation:
-              intersection.explanation
-          });
-        }
-      }
+    return (
+      item.productAName===productName ||
+      item.productBName===productName
     );
+
+  });
+
+}
+
+
+// ============================================================
+// OPPORTUNITY ENGINE
+// ============================================================
+
+function analyseProspectOpportunity(prospect){
+
+  if(!prospect)return null;
+
+  const productInterest=
+    String(prospect.product_interest||"").trim();
+
+  const primaryProduct=
+    productInterest
+      ? AdviserOS.products.find(
+          p=>
+            String(p.name||"").toLowerCase()===
+            productInterest.toLowerCase()
+        )
+      : null;
+
+  const opportunities=[];
+
+  if(primaryProduct){
+
+    getProductIntersections(
+      primaryProduct.name
+    ).forEach(intersection=>{
+
+      const complementary=
+        intersection.productAName===
+        primaryProduct.name
+          ? intersection.productBName
+          : intersection.productAName;
+
+      const product=
+        getProductByName(complementary);
+
+      if(product){
+
+        opportunities.push({
+
+          product:product.name,
+
+          category:product.category,
+
+          relationship:
+            intersection.relationship_type,
+
+          explanation:
+            intersection.explanation
+
+        });
+
+      }
+
+    });
+
   }
 
   return {
 
-    prospectId:
-      prospect.id || "",
+    prospectId:prospect.id||"",
 
     prospectName:
-      prospect.full_name ||
+      prospect.full_name||
       "Unnamed Prospect",
 
     organisation:
-      prospect.organisation ||
-      "",
+      prospect.organisation||"",
 
     segment:
-      prospect.segment ||
-      "",
+      prospect.segment||"",
 
     location:
-      prospect.location ||
-      "",
+      prospect.location||"",
 
     stage:
-      prospect.stage ||
-      "",
+      prospect.stage||"",
 
     priority:
-      prospect.priority ||
-      "",
+      prospect.priority||"",
 
-    productInterest:
-      productInterest,
+    productInterest,
 
     estimatedPremium:
-      Number(
-        prospect.estimated_premium
-      ) || 0,
+      Number(prospect.estimated_premium)||0,
 
     notes:
-      prospect.notes ||
-      "",
+      prospect.notes||"",
 
     nextAction:
-      prospect.next_action ||
-      "",
+      prospect.next_action||"",
 
     followUpDate:
-      prospect.follow_up_date ||
-      "",
+      prospect.follow_up_date||"",
 
     primaryProduct:
       primaryProduct
         ? primaryProduct.name
         : productInterest,
 
-    opportunities:
-      opportunities
+    opportunities
+
   };
+
 }
 
 
-// ============================================================
-// RUN OPPORTUNITY ENGINE
-// ============================================================
+function runOpportunityEngine(){
 
-function runOpportunityEngine() {
+  if(!AdviserOS.prospects.length){
 
-  if (!AdviserOS.prospects.length) {
-
-    AdviserOS.opportunities = [];
-
+    AdviserOS.opportunities=[];
     return [];
+
   }
 
-  const results =
-    AdviserOS.prospects.map(
-      analyseProspectOpportunity
-    );
+  AdviserOS.opportunities=
+    AdviserOS.prospects
+      .map(analyseProspectOpportunity)
+      .filter(
+        result=>
+          result &&
+          result.opportunities &&
+          result.opportunities.length
+      );
 
-  const opportunities =
-    results.filter(
-      result =>
-        result &&
-        result.opportunities &&
-        result.opportunities.length > 0
-    );
+  return AdviserOS.opportunities;
 
-  AdviserOS.opportunities =
-    opportunities;
-
-  console.log(
-    "Opportunity Engine:",
-    opportunities.length,
-    "prospects with opportunities."
-  );
-
-  return opportunities;
 }
 
 
-// ============================================================
-// OPPORTUNITY SUMMARY
-// ============================================================
+function getOpportunitySummary(){
 
-function getOpportunitySummary() {
-
-  const opportunities =
+  const opportunities=
     runOpportunityEngine();
-
-  const totalOpportunities =
-    opportunities.reduce(
-      (total, prospect) =>
-        total + prospect.opportunities.length,
-      0
-    );
-
-  const highPriority =
-    opportunities.filter(
-      prospect => {
-
-        const priority =
-          String(
-            prospect.priority || ""
-          ).toLowerCase();
-
-        return (
-          priority === "high" ||
-          priority === "hot"
-        );
-      }
-    ).length;
 
   return {
 
-    prospects:
-      opportunities.length,
+    prospects:opportunities.length,
 
     opportunities:
-      totalOpportunities,
+      opportunities.reduce(
+        (total,item)=>
+          total+item.opportunities.length,
+        0
+      ),
 
     highPriority:
-      highPriority
+      opportunities.filter(item=>{
+
+        const p=
+          String(item.priority||"").toLowerCase();
+
+        return p==="high"||p==="hot";
+
+      }).length
+
   };
+
 }
 
 
-// ============================================================
-// INDIVIDUAL PROSPECT OPPORTUNITIES
-// ============================================================
+function getProspectOpportunities(prospectId){
 
-function getProspectOpportunities(prospectId) {
-
-  const prospect =
+  const prospect=
     AdviserOS.prospects.find(
-      item =>
-        item.id === prospectId
+      item=>item.id===prospectId
     );
 
-  if (!prospect) {
-    return null;
-  }
+  return prospect
+    ? analyseProspectOpportunity(prospect)
+    : null;
 
-  return analyseProspectOpportunity(
-    prospect
-  );
 }
 
 
-// ============================================================
-// GENERATE SUGGESTED NEXT MOVE
-// ============================================================
+function generateNextMove(opportunity){
 
-function generateNextMove(opportunity) {
-
-  if (!opportunity) {
-
-    return "Begin a discovery conversation.";
+  if(!opportunity){
+    return "Begin with a needs-based discovery conversation.";
   }
 
-  if (opportunity.nextAction) {
-
+  if(opportunity.nextAction){
     return opportunity.nextAction;
   }
 
-  const stage =
-    String(
-      opportunity.stage || ""
-    ).toLowerCase();
+  const stage=
+    String(opportunity.stage||"").toLowerCase();
 
-  if (
-    stage.includes("new") ||
-    stage.includes("lead")
-  ) {
+  if(stage.includes("new")||stage.includes("lead")){
 
-    return (
-      "Start with discovery questions " +
-      "before presenting the product."
-    );
+    return "Start with discovery questions before discussing products.";
+
   }
 
-  if (
-    stage.includes("quote") ||
-    stage.includes("proposal")
-  ) {
+  if(stage.includes("quote")||stage.includes("proposal")){
 
-    return (
-      "Follow up on the proposal and " +
-      "address any outstanding questions."
-    );
+    return "Follow up on the proposal and address outstanding questions.";
+
   }
 
-  if (
-    stage.includes("follow")
-  ) {
+  if(stage.includes("follow")){
 
-    return (
-      "Follow up and identify whether " +
-      "another protection or planning need exists."
-    );
+    return "Follow up and establish whether another legitimate planning need exists.";
+
   }
 
-  return (
-    "Explore the primary need, then " +
-    "introduce the complementary opportunity."
-  );
+  return "Explore the primary need first, then consider a complementary opportunity.";
+
 }
 
 
 // ============================================================
-// NEWS HELPERS
+// NEWS
 // ============================================================
 
-function formatNewsDate(dateValue) {
+function getNewsRelevanceClass(relevance){
 
-  if (!dateValue) {
-    return "Date unavailable";
-  }
+  const value=
+    String(relevance||"").toLowerCase();
 
-  try {
-
-    const date =
-      new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Date unavailable";
-    }
-
-    return date.toLocaleDateString(
-      "en-ZA",
-      {
-        day: "numeric",
-        month: "short",
-        year: "numeric"
-      }
-    );
-
-  } catch (error) {
-
-    return "Date unavailable";
-  }
-}
-
-
-function getNewsRelevanceClass(relevance) {
-
-  const value =
-    String(relevance || "")
-      .toLowerCase();
-
-  if (
-    value.includes("high") ||
-    value.includes("critical") ||
+  if(
+    value.includes("high")||
+    value.includes("critical")||
     value.includes("strong")
-  ) {
+  ){
     return "high";
   }
 
-  if (
-    value.includes("medium") ||
+  if(
+    value.includes("medium")||
     value.includes("moderate")
-  ) {
+  ){
     return "medium";
   }
 
   return "normal";
+
 }
 
 
-function getNewsRelevanceLabel(relevance) {
+function createNewsIntelligence(){
 
-  if (!relevance) {
-    return "Industry relevance";
-  }
-
-  return String(relevance);
-}
-
-
-// ============================================================
-// NEWS INTELLIGENCE CENTRE
-// ============================================================
-
-function createNewsIntelligence() {
-
-  let centre =
+  let centre=
     document.getElementById(
       "adviser-os-news-intelligence"
     );
 
-  if (!centre) {
+  if(!centre){
 
-    centre =
-      document.createElement("section");
+    centre=document.createElement("section");
+    centre.id="adviser-os-news-intelligence";
 
-    centre.id =
-      "adviser-os-news-intelligence";
+    const first=document.querySelector(".main");
 
-    const opportunityCentre =
-      document.getElementById(
-        "adviser-os-opportunity-centre"
-      );
-
-    if (
-      opportunityCentre &&
-      opportunityCentre.parentNode
-    ) {
-
-      opportunityCentre.parentNode.insertBefore(
-        centre,
-        opportunityCentre
-      );
-
-    } else {
-
-      const firstScreen =
-        document.querySelector(".screen");
-
-      if (firstScreen) {
-
-        firstScreen.parentNode.insertBefore(
-          centre,
-          firstScreen
-        );
-
-      } else {
-
-        document.body.prepend(
-          centre
-        );
-      }
+    if(first){
+      first.insertBefore(centre,first.firstChild);
     }
+
   }
 
-  centre.innerHTML = "";
+  centre.innerHTML="";
 
-  centre.style.cssText = `
-    width:calc(100% - 32px);
-    max-width:1200px;
-    margin:20px auto;
-    box-sizing:border-box;
-  `;
+  const panel=document.createElement("div");
 
-  const panel =
-    document.createElement("div");
-
-  panel.style.cssText = `
-    background:#ffffff;
-    border:1px solid #dfe5ec;
-    border-radius:16px;
+  panel.style.cssText=`
+    background:#fff;
+    border:1px solid #dfe7eb;
+    border-radius:17px;
     padding:22px;
-    box-shadow:0 6px 20px rgba(0,0,0,0.06);
-  `;
-
-  const header =
-    document.createElement("div");
-
-  header.style.cssText = `
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:16px;
-    flex-wrap:wrap;
+    box-shadow:0 7px 24px rgba(8,25,35,.065);
     margin-bottom:20px;
   `;
 
-  const heading =
-    document.createElement("div");
+  const heading=document.createElement("div");
 
-  heading.innerHTML = `
-    <div style="
-      font-size:12px;
-      font-weight:bold;
-      letter-spacing:1px;
-      color:#667085;
-      text-transform:uppercase;
-      margin-bottom:5px;
-    ">
-      Market Intelligence
-    </div>
+  heading.innerHTML=`
 
     <div style="
-      font-size:26px;
-      font-weight:700;
-      color:#172033;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:15px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
     ">
-      Current Industry News
+
+      <div>
+
+        <div style="
+          font-size:10px;
+          font-weight:800;
+          letter-spacing:1px;
+          color:#d0a64b;
+          text-transform:uppercase;
+        ">
+          Market Intelligence
+        </div>
+
+        <h2 style="
+          margin:4px 0 0;
+          color:#15232d;
+          font-size:24px;
+        ">
+          Current Industry News
+        </h2>
+
+        <div style="
+          margin-top:5px;
+          color:#6c7b86;
+          font-size:13px;
+        ">
+          Developments connected to financial services,
+          clients, products and adviser conversations.
+        </div>
+
+      </div>
+
+      <div style="
+        padding:8px 12px;
+        border-radius:20px;
+        background:#edf7f4;
+        color:#087c68;
+        font-size:11px;
+        font-weight:800;
+      ">
+        ${AdviserOS.news.length} STORIES
+      </div>
+
     </div>
 
-    <div style="
-      font-size:14px;
-      color:#667085;
-      margin-top:5px;
-      max-width:700px;
-    ">
-      Industry developments connected to your advisory
-      work, products and client conversations.
-    </div>
   `;
 
-  header.appendChild(heading);
+  panel.appendChild(heading);
 
-  const countBadge =
-    document.createElement("div");
+  if(!AdviserOS.news.length){
 
-  countBadge.style.cssText = `
-    background:#f4f7fb;
-    border:1px solid #e1e7ef;
-    border-radius:10px;
-    padding:9px 13px;
-    font-size:13px;
-    font-weight:600;
-    color:#344054;
-  `;
+    const empty=document.createElement("div");
 
-  countBadge.textContent =
-    `${AdviserOS.news.length} stories`;
-
-  header.appendChild(countBadge);
-
-  panel.appendChild(header);
-
-  if (!AdviserOS.news.length) {
-
-    const empty =
-      document.createElement("div");
-
-    empty.style.cssText = `
-      padding:30px;
+    empty.style.cssText=`
+      padding:28px;
+      border:1px dashed #cbd5df;
+      border-radius:13px;
       text-align:center;
-      border:1px dashed #cbd5e1;
-      border-radius:12px;
-      color:#667085;
-      background:#fafbfc;
+      color:#6c7b86;
+      background:#fafcfd;
     `;
 
-    empty.innerHTML = `
-      <div style="
-        font-size:18px;
-        font-weight:700;
-        color:#344054;
-        margin-bottom:7px;
+    empty.innerHTML=`
+
+      <strong style="
+        display:block;
+        color:#344550;
+        font-size:17px;
+        margin-bottom:6px;
       ">
         News Intelligence is ready
-      </div>
+      </strong>
 
-      <div style="line-height:1.5;">
-        The news table is connected.
-        Add industry stories to Supabase and
-        they will appear here automatically.
-      </div>
+      Add industry stories to the
+      <strong>news</strong> table and they will appear here.
+
     `;
 
     panel.appendChild(empty);
 
-  } else {
+  }else{
 
-    const grid =
-      document.createElement("div");
+    const grid=document.createElement("div");
 
-    grid.style.cssText = `
+    grid.style.cssText=`
       display:grid;
       grid-template-columns:
         repeat(auto-fit,minmax(280px,1fr));
       gap:16px;
     `;
 
-    AdviserOS.news.forEach(article => {
+    AdviserOS.news.forEach(article=>{
 
-      const card =
-        document.createElement("article");
+      const card=document.createElement("article");
 
-      card.style.cssText = `
-        border:1px solid #e1e7ef;
-        border-radius:14px;
-        overflow:hidden;
-        background:#ffffff;
-        display:flex;
-        flex-direction:column;
-        min-height:250px;
+      card.style.cssText=`
+        border:1px solid #dfe7eb;
+        border-radius:15px;
+        padding:17px;
+        background:#fff;
+        transition:.22s ease;
       `;
 
-      const content =
-        document.createElement("div");
+      card.onmouseenter=()=>{
+        card.style.transform="translateY(-3px)";
+        card.style.boxShadow="0 12px 30px rgba(8,25,35,.11)";
+      };
 
-      content.style.cssText = `
-        padding:18px;
-        display:flex;
-        flex-direction:column;
-        height:100%;
-        box-sizing:border-box;
-      `;
+      card.onmouseleave=()=>{
+        card.style.transform="";
+        card.style.boxShadow="";
+      };
 
-      const category =
-        article.category || "Industry";
+      const relevance=
+        article.relevance||
+        "Industry relevance";
 
-      const relevance =
-        getNewsRelevanceLabel(
-          article.relevance
-        );
+      const relevanceClass=
+        getNewsRelevanceClass(relevance);
 
-      const relevanceClass =
-        getNewsRelevanceClass(
-          article.relevance
-        );
+      const colour=
+        relevanceClass==="high"
+          ? ["#e8f7f2","#087c68"]
+          : relevanceClass==="medium"
+            ? ["#fff7df","#8b681e"]
+            : ["#f4f7fb","#667085"];
 
-      const articleLink =
-        article.url
-          ? `
-            <a
-              href="${escapeHtml(article.url)}"
-              target="_blank"
-              rel="noopener noreferrer"
-              style="
-                display:inline-block;
-                margin-top:15px;
-                color:#0b7a68;
-                font-weight:700;
-                text-decoration:none;
-                font-size:13px;
-              "
-            >
-              Read original article →
-            </a>
-          `
-          : "";
-
-      content.innerHTML = `
+      card.innerHTML=`
 
         <div style="
           display:flex;
           justify-content:space-between;
           gap:8px;
-          align-items:flex-start;
-          margin-bottom:10px;
+          margin-bottom:11px;
         ">
 
           <span style="
-            background:#f4f7fb;
-            color:#344054;
-            border-radius:7px;
             padding:5px 8px;
-            font-size:11px;
-            font-weight:700;
+            border-radius:7px;
+            background:#f4f7fb;
+            color:#344550;
+            font-size:9px;
+            font-weight:800;
             text-transform:uppercase;
           ">
-            ${escapeHtml(category)}
+            ${escapeHtml(article.category||"Industry")}
           </span>
 
           <span style="
-            background:${
-              relevanceClass === "high"
-                ? "#e8f5f1"
-                : relevanceClass === "medium"
-                  ? "#fff7e6"
-                  : "#f4f7fb"
-            };
-            color:${
-              relevanceClass === "high"
-                ? "#08745f"
-                : relevanceClass === "medium"
-                  ? "#9a6700"
-                  : "#667085"
-            };
-            border-radius:7px;
             padding:5px 8px;
-            font-size:10px;
-            font-weight:700;
+            border-radius:7px;
+            background:${colour[0]};
+            color:${colour[1]};
+            font-size:9px;
+            font-weight:800;
           ">
             ${escapeHtml(relevance)}
           </span>
@@ -1470,31 +1172,25 @@ function createNewsIntelligence() {
 
         <h3 style="
           margin:0;
-          font-size:18px;
-          line-height:1.35;
-          color:#172033;
+          font-size:17px;
+          line-height:1.4;
+          color:#15232d;
         ">
           ${escapeHtml(
-            article.headline ||
-            "Untitled news story"
+            article.headline||"Untitled story"
           )}
         </h3>
 
         <div style="
           margin-top:7px;
-          font-size:12px;
-          color:#667085;
+          font-size:11px;
+          color:#6c7b86;
         ">
-          ${escapeHtml(
-            article.source ||
-            "Industry source"
-          )}
-
+          ${escapeHtml(article.source||"Industry source")}
           ·
-
           ${escapeHtml(
-            formatNewsDate(
-              article.published_at ||
+            formatDate(
+              article.published_at||
               article.created_at
             )
           )}
@@ -1503,53 +1199,49 @@ function createNewsIntelligence() {
         ${
           article.summary
             ? `
-              <div style="
-                margin-top:12px;
+              <p style="
+                margin:12px 0 0;
                 font-size:13px;
                 line-height:1.55;
-                color:#475467;
+                color:#475760;
               ">
-                ${escapeHtml(
-                  article.summary
-                )}
-              </div>
+                ${escapeHtml(article.summary)}
+              </p>
             `
-            : ""
+            :""
         }
 
         ${
           article.why_it_matters
             ? `
               <div style="
-                margin-top:14px;
-                padding:12px;
-                background:#f7f9fc;
-                border-radius:10px;
-                border-left:4px solid #c89b3c;
+                margin-top:13px;
+                padding:11px;
+                border-left:3px solid #d0a64b;
+                border-radius:9px;
+                background:#fffaf0;
               ">
                 <div style="
-                  font-size:10px;
-                  font-weight:700;
-                  letter-spacing:.6px;
-                  color:#667085;
+                  font-size:9px;
+                  font-weight:800;
+                  color:#8b681e;
                   text-transform:uppercase;
-                  margin-bottom:5px;
+                  letter-spacing:.5px;
                 ">
                   Why it matters
                 </div>
 
                 <div style="
-                  font-size:13px;
+                  margin-top:4px;
+                  font-size:12px;
                   line-height:1.5;
-                  color:#344054;
+                  color:#684f18;
                 ">
-                  ${escapeHtml(
-                    article.why_it_matters
-                  )}
+                  ${escapeHtml(article.why_it_matters)}
                 </div>
               </div>
             `
-            : ""
+            :""
         }
 
         ${
@@ -1557,54 +1249,66 @@ function createNewsIntelligence() {
             ? `
               <div style="
                 margin-top:10px;
-                padding:10px 12px;
-                background:#eef8f5;
+                padding:10px;
                 border-radius:9px;
+                background:#edf7f4;
               ">
                 <div style="
-                  font-size:10px;
-                  font-weight:700;
-                  color:#08745f;
+                  font-size:9px;
+                  font-weight:800;
+                  color:#087c68;
                   text-transform:uppercase;
-                  letter-spacing:.5px;
-                  margin-bottom:4px;
                 ">
-                  Product Connection
+                  Product connection
                 </div>
 
                 <div style="
-                  font-size:13px;
-                  line-height:1.45;
+                  margin-top:4px;
+                  font-size:12px;
+                  line-height:1.5;
                   color:#245c51;
                 ">
-                  ${escapeHtml(
-                    article.product_connection
-                  )}
+                  ${escapeHtml(article.product_connection)}
                 </div>
               </div>
             `
-            : ""
+            :""
         }
 
-        ${articleLink}
+        ${
+          article.url
+            ? `
+              <a
+                href="${escapeHtml(article.url)}"
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                  display:inline-block;
+                  margin-top:13px;
+                  color:#087c68;
+                  font-size:12px;
+                  font-weight:800;
+                  text-decoration:none;
+                "
+              >
+                Read source →
+              </a>
+            `
+            :""
+        }
 
       `;
-
-      card.appendChild(content);
 
       grid.appendChild(card);
 
     });
 
     panel.appendChild(grid);
+
   }
 
   centre.appendChild(panel);
 
-  console.log(
-    "News Intelligence rendered:",
-    AdviserOS.news.length
-  );
 }
 
 
@@ -1612,373 +1316,313 @@ function createNewsIntelligence() {
 // OPPORTUNITY CENTRE
 // ============================================================
 
-function createOpportunityCentre() {
+function createOpportunityCentre(){
 
-  let centre =
+  let centre=
     document.getElementById(
       "adviser-os-opportunity-centre"
     );
 
-  if (!centre) {
+  if(!centre){
 
-    centre =
-      document.createElement("section");
+    centre=document.createElement("section");
+    centre.id="adviser-os-opportunity-centre";
 
-    centre.id =
-      "adviser-os-opportunity-centre";
+    const main=document.querySelector(".main");
 
-    const newsCentre =
-      document.getElementById(
-        "adviser-os-news-intelligence"
-      );
-
-    const firstScreen =
-      document.querySelector(".screen");
-
-    if (
-      newsCentre &&
-      newsCentre.parentNode
-    ) {
-
-      newsCentre.parentNode.insertBefore(
+    if(main){
+      main.insertBefore(
         centre,
-        newsCentre.nextSibling
+        main.children[1]||null
       );
-
-    } else if (firstScreen) {
-
-      firstScreen.parentNode.insertBefore(
-        centre,
-        firstScreen
-      );
-
-    } else {
-
-      document.body.prepend(centre);
     }
+
   }
 
-  const opportunities =
-    runOpportunityEngine();
+  const opportunities=runOpportunityEngine();
+  const summary=getOpportunitySummary();
 
-  const summary =
-    getOpportunitySummary();
+  centre.innerHTML="";
 
-  centre.innerHTML = "";
+  const panel=document.createElement("div");
 
-  centre.style.cssText = `
-    width:calc(100% - 32px);
-    max-width:1200px;
-    margin:20px auto;
-    box-sizing:border-box;
-    font-family:Arial,sans-serif;
-  `;
-
-  const panel =
-    document.createElement("div");
-
-  panel.style.cssText = `
-    background:#ffffff;
-    border:1px solid #dfe5ec;
-    border-radius:16px;
+  panel.style.cssText=`
+    background:#fff;
+    border:1px solid #dfe7eb;
+    border-radius:17px;
     padding:22px;
-    box-shadow:0 6px 20px rgba(0,0,0,0.06);
-  `;
-
-  const header =
-    document.createElement("div");
-
-  header.style.cssText = `
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    gap:16px;
-    flex-wrap:wrap;
+    box-shadow:0 7px 24px rgba(8,25,35,.065);
     margin-bottom:20px;
   `;
 
-  const title =
-    document.createElement("div");
-
-  title.innerHTML = `
-    <div style="
-      font-size:12px;
-      font-weight:bold;
-      letter-spacing:1px;
-      color:#667085;
-      text-transform:uppercase;
-      margin-bottom:5px;
-    ">
-      Adviser Intelligence
-    </div>
+  panel.innerHTML=`
 
     <div style="
-      font-size:26px;
-      font-weight:700;
-      color:#172033;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:15px;
+      flex-wrap:wrap;
+      margin-bottom:18px;
     ">
-      Opportunity Centre
+
+      <div>
+
+        <div style="
+          font-size:10px;
+          font-weight:800;
+          letter-spacing:1px;
+          color:#d0a64b;
+          text-transform:uppercase;
+        ">
+          Adviser Intelligence
+        </div>
+
+        <h2 style="
+          margin:4px 0 0;
+          color:#15232d;
+          font-size:24px;
+        ">
+          Opportunity Centre
+        </h2>
+
+        <div style="
+          margin-top:5px;
+          color:#6c7b86;
+          font-size:13px;
+        ">
+          Connect actual prospect needs with relevant product intelligence.
+        </div>
+
+      </div>
+
+      <button
+        id="opportunity-refresh"
+        class="button"
+      >
+        Refresh
+      </button>
+
     </div>
 
-    <div style="
-      font-size:14px;
-      color:#667085;
-      margin-top:5px;
-    ">
-      Turn prospect information into the next useful conversation.
-    </div>
   `;
 
-  header.appendChild(title);
+  panel.querySelector("#opportunity-refresh").onclick=
+    async function(){
 
-  const refreshButton =
-    document.createElement("button");
-
-  refreshButton.textContent =
-    "Refresh Opportunities";
-
-  refreshButton.style.cssText = `
-    border:none;
-    border-radius:10px;
-    padding:11px 16px;
-    background:#172033;
-    color:#ffffff;
-    font-weight:600;
-    cursor:pointer;
-  `;
-
-  refreshButton.onclick =
-    async function () {
-
-      refreshButton.textContent =
-        "Refreshing...";
+      this.textContent="Refreshing...";
 
       await refreshAdviserOSData();
 
-      createNewsIntelligence();
-
       createOpportunityCentre();
-
+      createNewsIntelligence();
       createProspectingRadar();
+
     };
 
-  header.appendChild(refreshButton);
 
-  panel.appendChild(header);
+  const summaryGrid=document.createElement("div");
 
-  const summaryGrid =
-    document.createElement("div");
-
-  summaryGrid.style.cssText = `
+  summaryGrid.style.cssText=`
     display:grid;
     grid-template-columns:
       repeat(auto-fit,minmax(150px,1fr));
     gap:12px;
-    margin-bottom:22px;
+    margin-bottom:20px;
   `;
 
-  const summaryCards = [
+  [
+    ["Prospects with Opportunities",summary.prospects],
+    ["Product Connections",summary.opportunities],
+    ["High Priority",summary.highPriority],
+    ["Products Loaded",AdviserOS.products.length]
+  ].forEach(item=>{
 
-    {
-      label:"Prospects with Opportunities",
-      value:summary.prospects
-    },
+    const box=document.createElement("div");
 
-    {
-      label:"Product Connections",
-      value:summary.opportunities
-    },
-
-    {
-      label:"High Priority",
-      value:summary.highPriority
-    },
-
-    {
-      label:"Products Loaded",
-      value:AdviserOS.products.length
-    }
-
-  ];
-
-  summaryCards.forEach(card => {
-
-    const item =
-      document.createElement("div");
-
-    item.style.cssText = `
-      background:#f7f9fc;
-      border:1px solid #e5e9ef;
-      border-radius:12px;
+    box.style.cssText=`
       padding:15px;
+      background:#f7fafb;
+      border:1px solid #e2e9ed;
+      border-radius:12px;
     `;
 
-    item.innerHTML = `
+    box.innerHTML=`
 
       <div style="
-        font-size:12px;
-        color:#667085;
-        margin-bottom:7px;
+        font-size:10px;
+        color:#6c7b86;
+        text-transform:uppercase;
+        letter-spacing:.5px;
       ">
-        ${escapeHtml(card.label)}
+        ${escapeHtml(item[0])}
       </div>
 
       <div style="
-        font-size:25px;
-        font-weight:700;
-        color:#172033;
+        margin-top:5px;
+        font-size:26px;
+        font-weight:850;
+        color:#15232d;
       ">
-        ${card.value}
+        ${item[1]}
       </div>
 
     `;
 
-    summaryGrid.appendChild(item);
+    summaryGrid.appendChild(box);
 
   });
 
   panel.appendChild(summaryGrid);
 
-  if (!opportunities.length) {
 
-    const empty =
-      document.createElement("div");
+  if(!opportunities.length){
 
-    empty.style.cssText = `
+    const empty=document.createElement("div");
+
+    empty.style.cssText=`
       padding:25px;
       text-align:center;
-      border:1px dashed #cbd5e1;
+      border:1px dashed #cbd5df;
       border-radius:12px;
-      color:#667085;
-      background:#fafbfc;
+      color:#6c7b86;
+      background:#fafcfd;
     `;
 
-    empty.innerHTML = `
-      <div style="
-        font-size:18px;
-        font-weight:700;
-        color:#344054;
-        margin-bottom:7px;
+    empty.innerHTML=`
+
+      <strong style="
+        display:block;
+        color:#344550;
+        font-size:17px;
+        margin-bottom:6px;
       ">
         Opportunity Engine is ready
-      </div>
+      </strong>
 
-      <div>
-        Add a product interest to prospects
-        and the engine will identify
-        complementary opportunities.
-      </div>
+      Add product interests to prospects and
+      Adviser OS will identify configured
+      complementary product relationships.
+
     `;
 
     panel.appendChild(empty);
 
-  } else {
+  }else{
 
-    const list =
-      document.createElement("div");
+    const grid=document.createElement("div");
 
-    list.style.cssText = `
+    grid.style.cssText=`
       display:grid;
       grid-template-columns:
-        repeat(auto-fit,minmax(280px,1fr));
+        repeat(auto-fit,minmax(290px,1fr));
       gap:15px;
     `;
 
-    opportunities.forEach(opportunity => {
+    opportunities.forEach(opportunity=>{
 
-      const card =
-        document.createElement("div");
+      const card=document.createElement("div");
 
-      const priority =
-        String(
-          opportunity.priority || ""
-        ).toLowerCase();
-
-      const isHigh =
-        priority === "high" ||
-        priority === "hot";
-
-      card.style.cssText = `
-        border:1px solid #e1e7ef;
+      card.style.cssText=`
+        border:1px solid #dfe7eb;
         border-radius:14px;
-        padding:18px;
-        background:#ffffff;
+        padding:17px;
+        background:#fff;
+        transition:.22s ease;
       `;
 
-      let opportunityHtml = "";
+      card.onmouseenter=()=>{
+        card.style.transform="translateY(-2px)";
+        card.style.boxShadow="0 12px 28px rgba(8,25,35,.1)";
+      };
 
-      opportunity.opportunities.forEach(item => {
+      card.onmouseleave=()=>{
+        card.style.transform="";
+        card.style.boxShadow="";
+      };
 
-        opportunityHtml += `
+      const priority=
+        String(opportunity.priority||"").toLowerCase();
+
+      const high=
+        priority==="high"||
+        priority==="hot";
+
+      let connections="";
+
+      opportunity.opportunities.forEach(item=>{
+
+        connections+=`
 
           <div style="
-            margin-top:12px;
+            margin-top:10px;
             padding:12px;
-            background:#f7f9fc;
             border-radius:10px;
+            background:#edf7f4;
           ">
 
             <div style="
-              font-size:12px;
-              color:#667085;
-              margin-bottom:4px;
+              font-size:9px;
+              color:#087c68;
+              font-weight:800;
+              text-transform:uppercase;
             ">
-              COMPLEMENTARY OPPORTUNITY
+              Complementary opportunity
             </div>
 
             <div style="
-              font-size:17px;
-              font-weight:700;
-              color:#172033;
+              margin-top:4px;
+              font-size:16px;
+              font-weight:800;
+              color:#15232d;
             ">
               ${escapeHtml(item.product)}
             </div>
 
             <div style="
-              font-size:13px;
-              color:#667085;
-              margin-top:5px;
+              margin-top:4px;
+              font-size:12px;
+              line-height:1.5;
+              color:#475760;
             ">
               ${escapeHtml(
-                item.explanation ||
-                "Complementary product opportunity."
+                item.explanation||
+                "Configured product relationship."
               )}
             </div>
 
           </div>
 
         `;
+
       });
 
-      card.innerHTML = `
+      card.innerHTML=`
 
         <div style="
           display:flex;
           justify-content:space-between;
           gap:10px;
-          align-items:flex-start;
         ">
 
           <div>
 
             <div style="
-              font-size:18px;
-              font-weight:700;
-              color:#172033;
+              font-size:17px;
+              font-weight:800;
+              color:#15232d;
             ">
-              ${escapeHtml(
-                opportunity.prospectName
-              )}
+              ${escapeHtml(opportunity.prospectName)}
             </div>
 
             <div style="
-              font-size:13px;
-              color:#667085;
               margin-top:3px;
+              font-size:11px;
+              color:#6c7b86;
             ">
               ${escapeHtml(
-                opportunity.organisation ||
-                opportunity.segment ||
+                opportunity.organisation||
+                opportunity.segment||
                 "Prospect"
               )}
             </div>
@@ -1986,820 +1630,689 @@ function createOpportunityCentre() {
           </div>
 
           ${
-            isHigh
+            high
               ? `
                 <span style="
-                  background:#fff4e5;
-                  color:#9a6700;
                   padding:5px 8px;
+                  background:#fff2e3;
+                  color:#9a6200;
                   border-radius:7px;
-                  font-size:11px;
-                  font-weight:700;
+                  font-size:9px;
+                  font-weight:800;
                 ">
                   HIGH PRIORITY
                 </span>
               `
-              : ""
+              :""
           }
 
         </div>
 
         <div style="
-          margin-top:15px;
-          padding:12px;
+          margin-top:13px;
+          padding:11px;
           border-radius:10px;
-          background:#f4f7fb;
+          background:#f5f8fa;
         ">
 
           <div style="
-            font-size:11px;
-            color:#667085;
+            font-size:9px;
+            color:#6c7b86;
             text-transform:uppercase;
-            letter-spacing:.5px;
+            font-weight:800;
           ">
-            Current Product Interest
+            Current product interest
           </div>
 
           <div style="
             margin-top:4px;
-            font-size:16px;
-            font-weight:700;
-            color:#172033;
+            font-size:15px;
+            font-weight:800;
+            color:#15232d;
           ">
             ${escapeHtml(
-              opportunity.primaryProduct ||
-              opportunity.productInterest ||
+              opportunity.primaryProduct||
+              opportunity.productInterest||
               "Not specified"
             )}
           </div>
 
         </div>
 
-        ${
-          opportunity.estimatedPremium > 0
-            ? `
-              <div style="
-                margin-top:12px;
-                font-size:13px;
-                color:#475467;
-              ">
-                Estimated premium:
-                <strong>
-                  R${Number(
-                    opportunity.estimatedPremium
-                  ).toLocaleString(
-                    "en-ZA",
-                    {
-                      minimumFractionDigits:2,
-                      maximumFractionDigits:2
-                    }
-                  )}
-                </strong>
-              </div>
-            `
-            : ""
-        }
-
-        ${opportunityHtml}
+        ${connections}
 
         <div style="
-          margin-top:14px;
-          padding-top:13px;
-          border-top:1px solid #eaecf0;
+          margin-top:13px;
+          padding-top:12px;
+          border-top:1px solid #e6ecef;
         ">
 
           <div style="
-            font-size:11px;
-            color:#667085;
+            font-size:9px;
+            color:#6c7b86;
+            font-weight:800;
             text-transform:uppercase;
-            letter-spacing:.5px;
           ">
-            Suggested Next Move
+            Suggested next move
           </div>
 
           <div style="
-            font-size:13px;
-            line-height:1.5;
-            color:#344054;
             margin-top:5px;
+            font-size:12px;
+            line-height:1.5;
+            color:#344550;
           ">
             ${escapeHtml(
-              generateNextMove(
-                opportunity
-              )
+              generateNextMove(opportunity)
             )}
           </div>
 
         </div>
+
       `;
 
-      list.appendChild(card);
+      grid.appendChild(card);
 
     });
 
-    panel.appendChild(list);
+    panel.appendChild(grid);
+
   }
 
   centre.appendChild(panel);
 
-  console.log(
-    "Opportunity Centre rendered."
-  );
 }
 
 
 // ============================================================
-// RADAR HELPERS
+// RADAR DETAIL
 // ============================================================
 
-function getRadarConfidenceClass(confidence) {
+function showRadarIntelligence(signalId){
 
-  const value =
-    String(confidence || "")
-      .toLowerCase();
-
-  if (value === "high") {
-
-    return {
-      background:"#e8f5f1",
-      color:"#08745f",
-      label:"HIGH CONFIDENCE"
-    };
-  }
-
-  if (
-    value === "medium" ||
-    value === "moderate"
-  ) {
-
-    return {
-      background:"#fff7e6",
-      color:"#9a6700",
-      label:"MODERATE CONFIDENCE"
-    };
-  }
-
-  return {
-    background:"#f4f7fb",
-    color:"#667085",
-    label:"EARLY SIGNAL"
-  };
-}
-
-
-function formatRadarDate(dateValue) {
-
-  if (!dateValue) {
-    return "Date unavailable";
-  }
-
-  try {
-
-    const date =
-      new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-      return "Date unavailable";
-    }
-
-    return date.toLocaleDateString(
-      "en-ZA",
-      {
-        day:"numeric",
-        month:"short",
-        year:"numeric"
-      }
-    );
-
-  } catch (error) {
-
-    return "Date unavailable";
-  }
-}
-
-
-// ============================================================
-// RADAR INTELLIGENCE DETAIL
-// ============================================================
-
-function showRadarIntelligence(signalId) {
-
-  const signal =
+  const signal=
     AdviserOS.prospectingSignals.find(
-      item =>
-        item.id === signalId
+      item=>item.id===signalId
     );
 
-  if (!signal) return;
+  if(!signal)return;
 
-  let modal =
+  let modal=
     document.getElementById(
       "adviser-os-radar-detail"
     );
 
-  if (!modal) {
+  if(!modal){
 
-    modal =
-      document.createElement("div");
+    modal=document.createElement("div");
 
-    modal.id =
-      "adviser-os-radar-detail";
+    modal.id="adviser-os-radar-detail";
 
-    modal.style.cssText = `
+    modal.style.cssText=`
       position:fixed;
       inset:0;
       z-index:9999;
-      background:rgba(15,23,42,.55);
+      background:rgba(5,18,25,.68);
+      backdrop-filter:blur(5px);
       display:flex;
       align-items:center;
       justify-content:center;
-      padding:20px;
-      box-sizing:border-box;
+      padding:18px;
     `;
 
+    modal.onclick=function(event){
+
+      if(event.target===modal){
+        closeRadarIntelligence();
+      }
+
+    };
+
     document.body.appendChild(modal);
+
   }
 
-  const confidence =
-    getRadarConfidenceClass(
-      signal.confidence
-    );
+  const confidence=confidenceInfo(signal.confidence);
 
-  modal.innerHTML = `
-
-    <div style="
-      width:min(850px,100%);
-      max-height:90vh;
-      overflow:auto;
-      background:#ffffff;
-      border-radius:18px;
-      padding:24px;
-      box-sizing:border-box;
-      box-shadow:0 20px 60px rgba(0,0,0,.25);
-    ">
-
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        gap:15px;
-        align-items:flex-start;
-        margin-bottom:20px;
-      ">
-
-        <div>
-
-          <div style="
-            font-size:11px;
-            font-weight:700;
-            letter-spacing:1px;
-            color:#667085;
-            text-transform:uppercase;
-            margin-bottom:6px;
-          ">
-            Prospecting Signal
-          </div>
-
-          <h2 style="
-            margin:0;
-            color:#172033;
-            font-size:25px;
-            line-height:1.3;
-          ">
-            ${escapeHtml(
-              signal.title ||
-              "Untitled signal"
-            )}
-          </h2>
-
-          <div style="
-            margin-top:7px;
-            color:#667085;
-            font-size:13px;
-          ">
-            ${escapeHtml(
-              signal.location ||
-              "Location unavailable"
-            )}
-            ·
-            ${escapeHtml(
-              signal.signal_type ||
-              "Signal"
-            )}
-          </div>
-
-        </div>
-
-        <button
-          onclick="closeRadarIntelligence()"
-          style="
-            border:0;
-            background:#f4f7fb;
-            color:#344054;
-            border-radius:9px;
-            padding:8px 11px;
-            cursor:pointer;
-            font-weight:700;
-          "
-        >
-          ✕
-        </button>
-
-      </div>
-
-      <div style="
-        display:inline-block;
-        background:${confidence.background};
-        color:${confidence.color};
-        padding:6px 9px;
-        border-radius:7px;
-        font-size:10px;
-        font-weight:700;
-        margin-bottom:20px;
-      ">
-        ${confidence.label}
-      </div>
-
-      <div style="
-        display:grid;
-        grid-template-columns:
-          repeat(auto-fit,minmax(250px,1fr));
-        gap:14px;
-      ">
-
-        ${radarDetailBox(
-          "What happened",
-          signal.evidence ||
-          signal.summary ||
-          "No documented evidence available.",
-          "#f7f9fc",
-          "#667085",
-          "#344054"
-        )}
-
-        ${radarDetailBox(
-          "AI interpretation",
-          signal.inference ||
-          "No interpretation recorded.",
-          "#eef8f5",
-          "#08745f",
-          "#245c51"
-        )}
-
-        ${radarDetailBox(
-          "When it may matter",
-          signal.estimated_financial_window ||
-          "Timing not established.",
-          "#fffaf0",
-          "#9a6700",
-          "#684f18"
-        )}
-
-        ${radarDetailBox(
-          "Who may be affected",
-          signal.segment ||
-          "Segment not specified.",
-          "#f7f9fc",
-          "#667085",
-          "#344054"
-        )}
-
-        ${radarDetailBox(
-          "Potential needs",
-          signal.potential_needs ||
-          "Needs not specified.",
-          "#f7f9fc",
-          "#667085",
-          "#344054"
-        )}
-
-        ${radarDetailBox(
-          "Product connection",
-          signal.product_connection ||
-          "Needs-based product matching.",
-          "#eef8f5",
-          "#08745f",
-          "#245c51"
-        )}
-
-      </div>
-
-      <div style="
-        margin-top:16px;
-        padding:16px;
-        background:#172033;
-        color:#ffffff;
-        border-radius:12px;
-      ">
-
-        <div style="
-          font-size:10px;
-          font-weight:700;
-          letter-spacing:.7px;
-          text-transform:uppercase;
-          opacity:.7;
-          margin-bottom:6px;
-        ">
-          What to do
-        </div>
-
-        <div style="
-          font-size:14px;
-          line-height:1.55;
-        ">
-          ${escapeHtml(
-            signal.action ||
-            "Monitor the signal and establish client need before recommending a product."
-          )}
-        </div>
-
-      </div>
-
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        gap:10px;
-        flex-wrap:wrap;
-        margin-top:17px;
-        padding-top:14px;
-        border-top:1px solid #eaecf0;
-        font-size:12px;
-        color:#667085;
-      ">
-
-        <div>
-          Source:
-          <strong>
-            ${escapeHtml(
-              signal.source ||
-              "Not specified"
-            )}
-          </strong>
-        </div>
-
-        <div>
-          Detected:
-          ${escapeHtml(
-            formatRadarDate(
-              signal.detected_at
-            )
-          )}
-        </div>
-
-        ${
-          signal.source_url
-            ? `
-              <a
-                href="${escapeHtml(
-                  signal.source_url
-                )}"
-                target="_blank"
-                rel="noopener noreferrer"
-                style="
-                  color:#0b7a68;
-                  font-weight:700;
-                  text-decoration:none;
-                "
-              >
-                Open source →
-              </a>
-            `
-            : ""
-        }
-
-      </div>
-
-    </div>
-  `;
-
-  modal.style.display =
-    "flex";
-}
-
-
-function radarDetailBox(
-  title,
-  text,
-  background,
-  titleColor,
-  textColor
-) {
-
-  return `
+  const box=(title,text,bg,color)=>`
 
     <div style="
       padding:15px;
-      background:${background};
       border-radius:12px;
+      background:${bg};
     ">
 
       <div style="
-        font-size:10px;
-        font-weight:700;
-        color:${titleColor};
+        font-size:9px;
+        font-weight:850;
+        color:${color};
+        letter-spacing:.6px;
         text-transform:uppercase;
-        letter-spacing:.5px;
         margin-bottom:6px;
       ">
         ${escapeHtml(title)}
       </div>
 
       <div style="
-        color:${textColor};
-        font-size:14px;
+        font-size:13px;
         line-height:1.55;
+        color:#344550;
       ">
-        ${escapeHtml(text)}
+        ${escapeHtml(
+          safeText(text)
+        )}
       </div>
 
     </div>
 
   `;
+
+  modal.innerHTML=`
+
+    <div style="
+      width:min(900px,100%);
+      max-height:92vh;
+      overflow:auto;
+      background:#fff;
+      border-radius:20px;
+      box-shadow:0 25px 80px rgba(0,0,0,.3);
+    ">
+
+      <div style="
+        padding:23px;
+        color:#fff;
+        background:
+          radial-gradient(circle at 85% 15%,rgba(208,166,75,.2),transparent 25%),
+          linear-gradient(135deg,#081923,#0d2a38);
+      ">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          gap:15px;
+        ">
+
+          <div>
+
+            <div style="
+              font-size:9px;
+              font-weight:850;
+              letter-spacing:1px;
+              color:#d0a64b;
+              text-transform:uppercase;
+            ">
+              Prospecting Intelligence
+            </div>
+
+            <h2 style="
+              margin:6px 0 0;
+              font-size:24px;
+              line-height:1.3;
+            ">
+              ${escapeHtml(
+                signal.title||
+                "Untitled signal"
+              )}
+            </h2>
+
+            <div style="
+              margin-top:7px;
+              color:#aebfc5;
+              font-size:12px;
+            ">
+              ${escapeHtml(
+                signal.location||
+                "Location unavailable"
+              )}
+              ·
+              ${escapeHtml(
+                signal.signal_type||
+                "Signal"
+              )}
+            </div>
+
+          </div>
+
+          <button
+            onclick="closeRadarIntelligence()"
+            style="
+              width:36px;
+              height:36px;
+              border:1px solid rgba(255,255,255,.12);
+              border-radius:10px;
+              background:rgba(255,255,255,.07);
+              color:#fff;
+              cursor:pointer;
+              font-size:18px;
+            "
+          >
+            ×
+          </button>
+
+        </div>
+
+        <div style="
+          display:inline-flex;
+          margin-top:15px;
+          padding:6px 9px;
+          border-radius:8px;
+          background:${confidence.background};
+          color:${confidence.color};
+          font-size:9px;
+          font-weight:850;
+        ">
+          ${confidence.label}
+        </div>
+
+      </div>
+
+      <div style="padding:22px;">
+
+        <div style="
+          display:grid;
+          grid-template-columns:
+            repeat(auto-fit,minmax(250px,1fr));
+          gap:13px;
+        ">
+
+          ${box(
+            "Documented evidence",
+            signal.evidence||
+            signal.summary,
+            "#edf7f4",
+            "#087c68"
+          )}
+
+          ${box(
+            "AI interpretation",
+            signal.inference,
+            "#edf3ff",
+            "#316bd6"
+          )}
+
+          ${box(
+            "Financial timing",
+            signal.estimated_financial_window,
+            "#fff7df",
+            "#8b681e"
+          )}
+
+          ${box(
+            "Affected segment",
+            signal.segment,
+            "#f6f8fa",
+            "#667780"
+          )}
+
+          ${box(
+            "Potential needs",
+            signal.potential_needs,
+            "#f6f8fa",
+            "#667780"
+          )}
+
+          ${box(
+            "Product connection",
+            signal.product_connection,
+            "#edf7f4",
+            "#087c68"
+          )}
+
+        </div>
+
+        <div style="
+          margin-top:15px;
+          padding:17px;
+          border-radius:13px;
+          color:#fff;
+          background:linear-gradient(135deg,#0b7c68,#056452);
+        ">
+
+          <div style="
+            font-size:9px;
+            font-weight:850;
+            letter-spacing:.6px;
+            text-transform:uppercase;
+            opacity:.75;
+          ">
+            Suggested action
+          </div>
+
+          <div style="
+            margin-top:6px;
+            font-size:14px;
+            line-height:1.55;
+          ">
+            ${escapeHtml(
+              safeText(
+                signal.action,
+                "Monitor the signal and establish actual client need before recommending a product."
+              )
+            )}
+          </div>
+
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          flex-wrap:wrap;
+          gap:10px;
+          margin-top:16px;
+          padding-top:14px;
+          border-top:1px solid #e6ecef;
+          font-size:11px;
+          color:#6c7b86;
+        ">
+
+          <span>
+            Source:
+            <strong>
+              ${escapeHtml(
+                signal.source||
+                "Not specified"
+              )}
+            </strong>
+          </span>
+
+          <span>
+            Detected:
+            ${escapeHtml(
+              formatDate(signal.detected_at)
+            )}
+          </span>
+
+          ${
+            signal.source_url
+              ? `
+                <a
+                  href="${escapeHtml(signal.source_url)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style="
+                    color:#087c68;
+                    font-weight:800;
+                    text-decoration:none;
+                  "
+                >
+                  Open source →
+                </a>
+              `
+              :""
+          }
+
+        </div>
+
+      </div>
+
+    </div>
+
+  `;
+
+  modal.style.display="flex";
+
 }
 
 
-function closeRadarIntelligence() {
+function closeRadarIntelligence(){
 
-  const modal =
+  const modal=
     document.getElementById(
       "adviser-os-radar-detail"
     );
 
-  if (modal) {
+  if(modal){
     modal.remove();
   }
+
 }
 
 
 // ============================================================
-// CREATE LIVE PROSPECTING RADAR
+// LIVE PROSPECTING RADAR
 // ============================================================
 
-function createProspectingRadar() {
+function createProspectingRadar(){
 
-  const radar =
-    document.getElementById("radar");
+  const radar=document.getElementById("radar");
 
-  if (!radar) {
+  if(!radar)return;
 
-    console.warn(
-      "Adviser OS: Radar screen not found."
-    );
-
-    return;
-  }
-
-  let panel =
+  let panel=
     document.getElementById(
       "adviser-os-live-radar"
     );
 
-  if (!panel) {
+  if(!panel){
 
-    panel =
-      document.createElement("div");
+    panel=document.createElement("div");
+    panel.id="adviser-os-live-radar";
+    radar.appendChild(panel);
 
-    panel.id =
-      "adviser-os-live-radar";
-
-    radar.prepend(panel);
   }
 
-  panel.innerHTML = "";
+  panel.innerHTML="";
 
-  panel.style.cssText = `
-    width:100%;
-    box-sizing:border-box;
-  `;
+  const signals=
+    AdviserOS.prospectingSignals||[];
 
-  const signals =
-    AdviserOS.prospectingSignals || [];
+  const territory=
+    AdviserOS.territorySignals||[];
 
-  const territorySignals =
-    AdviserOS.territorySignals || [];
+  const localSignals=
+    signals.filter(signal=>{
+
+      const location=
+        String(signal.location||"").toLowerCase();
+
+      return (
+        location.includes("mmabatho")||
+        location.includes("mahikeng")
+      );
+
+    });
 
 
-  // ==========================================================
   // HEADER
-  // ==========================================================
 
-  const header =
-    document.createElement("div");
+  const header=document.createElement("div");
 
-  header.style.cssText = `
-    display:flex;
-    justify-content:space-between;
-    align-items:flex-start;
-    gap:15px;
-    flex-wrap:wrap;
-    margin-bottom:18px;
-  `;
+  header.className="radar-header";
 
-  header.innerHTML = `
+  header.innerHTML=`
 
-    <div>
+    <div style="
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-start;
+      gap:15px;
+      flex-wrap:wrap;
+    ">
 
-      <div style="
-        font-size:11px;
-        font-weight:700;
-        letter-spacing:1px;
-        color:#667085;
-        text-transform:uppercase;
-      ">
-        Live intelligence
+      <div>
+
+        <div style="
+          color:#d0a64b;
+          font-size:10px;
+          font-weight:850;
+          letter-spacing:1px;
+          text-transform:uppercase;
+        ">
+          LIVE INTELLIGENCE LAYER
+        </div>
+
+        <h2>Prospecting Radar</h2>
+
+        <p>
+          Signals are translated into location,
+          segment, timing, potential need,
+          product connection and a professional next action.
+        </p>
+
       </div>
 
-      <h2 style="
-        margin:4px 0 0;
-        color:#172033;
-        font-size:25px;
-      ">
-        Prospecting Radar
-      </h2>
-
-      <div style="
-        margin-top:5px;
-        color:#667085;
-        font-size:14px;
-      ">
-        Signal → Location → Segment → Timing → Need → Product → Action
-      </div>
+      <button
+        id="radar-refresh-button"
+        style="
+          border:1px solid rgba(255,255,255,.13);
+          border-radius:10px;
+          padding:10px 14px;
+          background:rgba(255,255,255,.08);
+          color:#fff;
+          font-weight:800;
+          cursor:pointer;
+        "
+      >
+        Refresh Radar
+      </button>
 
     </div>
 
-    <button
-      id="radar-refresh-button"
-      style="
-        border:0;
-        border-radius:10px;
-        padding:10px 14px;
-        background:#172033;
-        color:#ffffff;
-        font-weight:700;
-        cursor:pointer;
-      "
-    >
-      Refresh Radar
-    </button>
+    <div style="
+      display:flex;
+      flex-wrap:wrap;
+      gap:7px;
+      margin-top:20px;
+    ">
+
+      ${
+        [
+          "SIGNAL",
+          "LOCATION",
+          "SEGMENT",
+          "TIMING",
+          "NEED",
+          "PRODUCT",
+          "ACTION"
+        ].map((x,i)=>`
+          <span style="
+            padding:7px 10px;
+            border-radius:20px;
+            background:${i===0
+              ?"rgba(208,166,75,.2)"
+              :"rgba(255,255,255,.08)"};
+            border:1px solid rgba(255,255,255,.1);
+            font-size:9px;
+            font-weight:800;
+            color:#eef4f5;
+          ">
+            ${x}
+          </span>
+        `).join("")
+      }
+
+    </div>
+
   `;
 
   panel.appendChild(header);
 
-  const radarRefreshButton =
-    document.getElementById(
-      "radar-refresh-button"
-    );
 
-  if (radarRefreshButton) {
+  const refreshButton=
+    header.querySelector("#radar-refresh-button");
 
-    radarRefreshButton.onclick =
-      async function () {
+  if(refreshButton){
 
-        this.textContent =
-          "Refreshing...";
+    refreshButton.onclick=async function(){
 
-        await refreshAdviserOSData();
+      this.textContent="Refreshing...";
 
-        createProspectingRadar();
-      };
+      await refreshAdviserOSData();
+
+      createProspectingRadar();
+
+    };
+
   }
 
 
-  // ==========================================================
-  // FLOW
-  // ==========================================================
-
-  const flow =
-    document.createElement("div");
-
-  flow.style.cssText = `
-    display:grid;
-    grid-template-columns:
-      repeat(auto-fit,minmax(115px,1fr));
-    gap:7px;
-    margin-bottom:18px;
-  `;
-
-  [
-    "SIGNAL",
-    "LOCATION",
-    "SEGMENT",
-    "TIMING",
-    "NEED",
-    "PRODUCT",
-    "ACTION"
-  ].forEach(
-    (item, index) => {
-
-      const box =
-        document.createElement("div");
-
-      box.style.cssText = `
-        padding:9px 7px;
-        text-align:center;
-        border-radius:8px;
-        background:${index === 0 ? "#172033" : "#f4f7fb"};
-        color:${index === 0 ? "#ffffff" : "#475467"};
-        font-size:10px;
-        font-weight:700;
-        letter-spacing:.5px;
-      `;
-
-      box.textContent =
-        item;
-
-      flow.appendChild(box);
-    }
-  );
-
-  panel.appendChild(flow);
-
-
-  // ==========================================================
   // SUMMARY
-  // ==========================================================
 
-  const summary =
-    document.createElement("div");
+  const summary=document.createElement("div");
 
-  summary.style.cssText = `
+  summary.style.cssText=`
     display:grid;
     grid-template-columns:
       repeat(auto-fit,minmax(150px,1fr));
     gap:12px;
-    margin-bottom:20px;
+    margin-bottom:21px;
   `;
 
-  const localSignals =
-    signals.filter(signal => {
+  const summaryItems=[
 
-      const location =
-        String(
-          signal.location || ""
-        ).toLowerCase();
+    [
+      "Live signals",
+      signals.length,
+      "#087c68",
+      "Active intelligence signals"
+    ],
 
-      return (
-        location.includes("mmabatho") ||
-        location.includes("mahikeng")
-      );
-    });
+    [
+      "Local signals",
+      localSignals.length,
+      "#d0a64b",
+      "Mahikeng / Mmabatho"
+    ],
 
-  const summaryItems = [
+    [
+      "Territory signals",
+      territory.length,
+      "#316bd6",
+      "Wider North West picture"
+    ],
 
-    {
-      label:"Live signals",
-      value:signals.length
-    },
-
-    {
-      label:"Local signals",
-      value:localSignals.length
-    },
-
-    {
-      label:"Territory signals",
-      value:territorySignals.length
-    },
-
-    {
-      label:"High confidence",
-      value:signals.filter(
-        signal =>
-          String(
-            signal.confidence || ""
-          ).toLowerCase() === "high"
-      ).length
-    }
+    [
+      "High confidence",
+      signals.filter(
+        s=>
+          String(s.confidence||"").toLowerCase()==="high"
+      ).length,
+      "#7357b8",
+      "Strong supporting evidence"
+    ]
 
   ];
 
-  summaryItems.forEach(item => {
+  summaryItems.forEach(item=>{
 
-    const card =
-      document.createElement("div");
+    const card=document.createElement("div");
 
-    card.style.cssText = `
-      background:#ffffff;
-      border:1px solid #e1e7ef;
-      border-radius:12px;
-      padding:15px;
+    card.className="card";
+
+    card.style.cssText=`
+      padding:17px;
+      position:relative;
+      overflow:hidden;
     `;
 
-    card.innerHTML = `
+    card.innerHTML=`
 
       <div style="
-        font-size:11px;
-        color:#667085;
-        margin-bottom:5px;
+        font-size:10px;
+        color:#6c7b86;
+        font-weight:750;
+        text-transform:uppercase;
+        letter-spacing:.5px;
       ">
-        ${escapeHtml(item.label)}
+        ${item[0]}
       </div>
 
       <div style="
-        font-size:25px;
-        font-weight:700;
-        color:#172033;
+        margin-top:4px;
+        font-size:29px;
+        line-height:1;
+        font-weight:850;
+        color:${item[2]};
       ">
-        ${item.value}
+        ${item[1]}
+      </div>
+
+      <div style="
+        margin-top:6px;
+        font-size:11px;
+        color:#7a8992;
+      ">
+        ${item[3]}
       </div>
 
     `;
@@ -2811,174 +2324,276 @@ function createProspectingRadar() {
   panel.appendChild(summary);
 
 
-  // ==========================================================
   // TODAY'S SIGNALS
-  // ==========================================================
 
-  const signalsHeading =
-    document.createElement("div");
+  const title=document.createElement("div");
 
-  signalsHeading.innerHTML = `
+  title.innerHTML=`
 
-    <h3 style="
-      margin:0 0 10px;
-      color:#172033;
-      font-size:20px;
+    <div style="
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:10px;
+      margin-bottom:12px;
     ">
-      Today's Signals
-    </h3>
+
+      <div>
+
+        <h3 style="
+          margin:0;
+          font-size:20px;
+          color:#15232d;
+        ">
+          Today's Signals
+        </h3>
+
+        <div style="
+          margin-top:4px;
+          color:#6c7b86;
+          font-size:12px;
+        ">
+          Current signals from the intelligence layer.
+        </div>
+
+      </div>
+
+      <div style="
+        font-size:11px;
+        color:#6c7b86;
+      ">
+        ${signals.length} active
+      </div>
+
+    </div>
 
   `;
 
-  panel.appendChild(signalsHeading);
+  panel.appendChild(title);
 
-  if (!signals.length) {
 
-    const empty =
-      document.createElement("div");
+  if(!signals.length){
 
-    empty.style.cssText = `
-      padding:25px;
-      border:1px dashed #cbd5e1;
-      border-radius:12px;
+    const empty=document.createElement("div");
+
+    empty.style.cssText=`
+      padding:30px;
+      background:#fff;
+      border:1px dashed #cbd5df;
+      border-radius:14px;
       text-align:center;
-      color:#667085;
-      background:#fafbfc;
+      color:#6c7b86;
     `;
 
-    empty.textContent =
-      "No active prospecting signals are currently available.";
+    empty.innerHTML=`
+      <strong style="
+        display:block;
+        color:#344550;
+        font-size:17px;
+        margin-bottom:5px;
+      ">
+        No active signals
+      </strong>
+      The Radar is connected and ready for new intelligence.
+    `;
 
     panel.appendChild(empty);
 
-  } else {
+  }else{
 
-    const grid =
-      document.createElement("div");
+    const grid=document.createElement("div");
 
-    grid.style.cssText = `
+    grid.style.cssText=`
       display:grid;
       grid-template-columns:
-        repeat(auto-fit,minmax(280px,1fr));
-      gap:15px;
+        repeat(auto-fit,minmax(310px,1fr));
+      gap:16px;
     `;
 
-    signals.forEach(signal => {
+    signals.forEach(signal=>{
 
-      const confidence =
-        getRadarConfidenceClass(
-          signal.confidence
-        );
+      const confidence=
+        confidenceInfo(signal.confidence);
 
-      const card =
-        document.createElement("article");
+      const card=document.createElement("article");
 
-      card.style.cssText = `
-        background:#ffffff;
-        border:1px solid #e1e7ef;
-        border-radius:14px;
-        padding:17px;
-        box-sizing:border-box;
-      `;
+      card.className="signal-card";
 
-      card.innerHTML = `
+      card.innerHTML=`
 
         <div style="
           display:flex;
           justify-content:space-between;
-          gap:8px;
           align-items:flex-start;
+          gap:9px;
         ">
 
           <span style="
-            background:#f4f7fb;
-            color:#344054;
-            border-radius:7px;
             padding:5px 8px;
-            font-size:10px;
-            font-weight:700;
+            border-radius:7px;
+            background:#f4f7fb;
+            color:#344550;
+            font-size:9px;
+            font-weight:850;
             text-transform:uppercase;
           ">
             ${escapeHtml(
-              signal.signal_type ||
+              signal.signal_type||
               "Signal"
             )}
           </span>
 
-          <span style="
-            background:${confidence.background};
-            color:${confidence.color};
-            border-radius:7px;
-            padding:5px 8px;
-            font-size:9px;
-            font-weight:700;
-          ">
+          <span class="confidence ${confidence.className}"
+            style="
+              padding:5px 8px;
+              border-radius:7px;
+              font-size:9px;
+              font-weight:850;
+            ">
             ${confidence.label}
           </span>
 
         </div>
 
-        <h4 style="
-          margin:13px 0 5px;
-          font-size:17px;
-          line-height:1.35;
-          color:#172033;
-        ">
+        <h3>
           ${escapeHtml(
-            signal.title ||
+            signal.title||
             "Untitled signal"
           )}
-        </h4>
+        </h3>
 
-        <div style="
-          font-size:12px;
-          color:#667085;
-        ">
-          📍
+        <div class="signal-location">
+          <strong>Location:</strong>
           ${escapeHtml(
-            signal.location ||
-            "Location unavailable"
+            signal.location||
+            "Not specified"
           )}
         </div>
 
         <div style="
-          margin-top:12px;
-          font-size:13px;
-          line-height:1.5;
-          color:#475467;
-        ">
-          ${escapeHtml(
-            signal.summary ||
-            signal.evidence ||
-            "No summary available."
-          )}
-        </div>
-
-        <div style="
-          margin-top:12px;
-          padding:10px;
-          background:#f7f9fc;
-          border-radius:9px;
+          margin-top:13px;
+          padding:12px;
+          border-radius:10px;
+          background:#f6f9fa;
         ">
 
           <div style="
             font-size:9px;
-            font-weight:700;
-            color:#667085;
+            font-weight:850;
+            color:#6c7b86;
             text-transform:uppercase;
-            margin-bottom:4px;
+            letter-spacing:.5px;
           ">
-            Timing
+            Signal summary
           </div>
 
           <div style="
+            margin-top:5px;
             font-size:12px;
-            color:#344054;
-            line-height:1.45;
+            line-height:1.55;
+            color:#344550;
           ">
             ${escapeHtml(
-              signal.estimated_financial_window ||
-              "Timing developing"
+              signal.summary||
+              signal.evidence||
+              "No summary available."
+            )}
+          </div>
+
+        </div>
+
+        <div style="
+          display:grid;
+          grid-template-columns:1fr 1fr;
+          gap:9px;
+          margin-top:10px;
+        ">
+
+          <div style="
+            padding:10px;
+            border-radius:9px;
+            background:#edf3ff;
+          ">
+
+            <div style="
+              font-size:8px;
+              font-weight:850;
+              color:#316bd6;
+              text-transform:uppercase;
+            ">
+              Segment
+            </div>
+
+            <div style="
+              margin-top:4px;
+              font-size:11px;
+              line-height:1.45;
+              color:#344550;
+            ">
+              ${escapeHtml(
+                signal.segment||
+                "Not specified"
+              )}
+            </div>
+
+          </div>
+
+          <div style="
+            padding:10px;
+            border-radius:9px;
+            background:#fff7df;
+          ">
+
+            <div style="
+              font-size:8px;
+              font-weight:850;
+              color:#8b681e;
+              text-transform:uppercase;
+            ">
+              Timing
+            </div>
+
+            <div style="
+              margin-top:4px;
+              font-size:11px;
+              line-height:1.45;
+              color:#684f18;
+            ">
+              ${escapeHtml(
+                signal.estimated_financial_window||
+                "Developing"
+              )}
+            </div>
+
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:10px;
+          padding:11px;
+          border-radius:9px;
+          background:#edf7f4;
+        ">
+
+          <div style="
+            font-size:8px;
+            font-weight:850;
+            color:#087c68;
+            text-transform:uppercase;
+          ">
+            Potential needs
+          </div>
+
+          <div style="
+            margin-top:4px;
+            font-size:11px;
+            line-height:1.5;
+            color:#245c51;
+          ">
+            ${escapeHtml(
+              signal.potential_needs||
+              "Needs assessment required."
             )}
           </div>
 
@@ -2986,52 +2601,116 @@ function createProspectingRadar() {
 
         <div style="
           margin-top:10px;
-          font-size:12px;
-          color:#475467;
+          padding:11px;
+          border-radius:9px;
+          background:#f7f9fb;
         ">
-          <strong>Potential needs:</strong>
-          ${escapeHtml(
-            signal.potential_needs ||
-            "Needs assessment required."
-          )}
+
+          <div style="
+            font-size:8px;
+            font-weight:850;
+            color:#6c7b86;
+            text-transform:uppercase;
+          ">
+            Product connection
+          </div>
+
+          <div style="
+            margin-top:4px;
+            font-size:11px;
+            line-height:1.5;
+            color:#344550;
+          ">
+            ${escapeHtml(
+              signal.product_connection||
+              "Needs-based product matching."
+            )}
+          </div>
+
+        </div>
+
+        <div style="
+          margin-top:10px;
+          padding:11px;
+          border-radius:9px;
+          background:#09202b;
+          color:#fff;
+        ">
+
+          <div style="
+            font-size:8px;
+            font-weight:850;
+            color:#d0a64b;
+            text-transform:uppercase;
+          ">
+            Suggested action
+          </div>
+
+          <div style="
+            margin-top:4px;
+            font-size:11px;
+            line-height:1.5;
+            color:#d8e3e6;
+          ">
+            ${escapeHtml(
+              signal.action||
+              "Establish actual client need before recommending a product."
+            )}
+          </div>
+
         </div>
 
         <button
-          data-radar-signal-id="${escapeHtml(
-            signal.id
-          )}"
+          data-radar-signal-id="${escapeHtml(signal.id)}"
           style="
-            margin-top:13px;
             width:100%;
+            margin-top:13px;
+            padding:11px;
             border:0;
-            border-radius:9px;
-            padding:10px;
-            background:#0b7a68;
-            color:#ffffff;
-            font-weight:700;
+            border-radius:10px;
+            background:linear-gradient(135deg,#087c68,#056452);
+            color:#fff;
+            font-weight:800;
             cursor:pointer;
+            transition:.2s ease;
           "
         >
-          View Intelligence →
+          Open Full Intelligence →
         </button>
+
+        <div style="
+          margin-top:8px;
+          font-size:9px;
+          color:#8a969e;
+        ">
+          Detected ${escapeHtml(
+            formatDate(signal.detected_at)
+          )}
+        </div>
 
       `;
 
-      const button =
+      const button=
         card.querySelector(
           "[data-radar-signal-id]"
         );
 
-      if (button) {
+      if(button){
 
-        button.onclick =
-          function () {
+        button.onclick=()=>{
+          showRadarIntelligence(signal.id);
+        };
 
-            showRadarIntelligence(
-              signal.id
-            );
+        button.onmouseenter=()=>{
+          button.style.transform="translateY(-1px)";
+          button.style.boxShadow="0 7px 15px rgba(8,124,104,.2)";
+        };
 
-          };
+        button.onmouseleave=()=>{
+          button.style.transform="";
+          button.style.boxShadow="";
+        };
+
       }
 
       grid.appendChild(card);
@@ -3039,26 +2718,21 @@ function createProspectingRadar() {
     });
 
     panel.appendChild(grid);
+
   }
 
 
-  // ==========================================================
   // TERRITORY PULSE
-  // ==========================================================
 
-  const territoryTitle =
-    document.createElement("div");
+  const territorySection=document.createElement("div");
 
-  territoryTitle.style.cssText = `
-    margin-top:25px;
-    margin-bottom:10px;
-  `;
+  territorySection.style.marginTop="28px";
 
-  territoryTitle.innerHTML = `
+  territorySection.innerHTML=`
 
     <h3 style="
       margin:0;
-      color:#172033;
+      color:#15232d;
       font-size:20px;
     ">
       Territory Pulse
@@ -3066,63 +2740,56 @@ function createProspectingRadar() {
 
     <div style="
       margin-top:4px;
-      font-size:13px;
-      color:#667085;
+      margin-bottom:12px;
+      color:#6c7b86;
+      font-size:12px;
     ">
-      Live signals affecting the wider territory.
+      Wider territory-level signals that may affect prospecting conditions.
     </div>
 
   `;
 
-  panel.appendChild(territoryTitle);
+  panel.appendChild(territorySection);
 
-  if (!territorySignals.length) {
 
-    const empty =
-      document.createElement("div");
+  if(!territory.length){
 
-    empty.style.cssText = `
+    const empty=document.createElement("div");
+
+    empty.style.cssText=`
       padding:20px;
-      border:1px dashed #cbd5e1;
-      border-radius:12px;
-      color:#667085;
+      background:#fff;
+      border:1px dashed #cbd5df;
+      border-radius:13px;
+      color:#6c7b86;
     `;
 
-    empty.textContent =
+    empty.textContent=
       "No active territory signals available.";
 
     panel.appendChild(empty);
 
-  } else {
+  }else{
 
-    const territoryGrid =
-      document.createElement("div");
+    const grid=document.createElement("div");
 
-    territoryGrid.style.cssText = `
+    grid.style.cssText=`
       display:grid;
       grid-template-columns:
-        repeat(auto-fit,minmax(280px,1fr));
+        repeat(auto-fit,minmax(300px,1fr));
       gap:15px;
     `;
 
-    territorySignals.forEach(signal => {
+    territory.forEach(signal=>{
 
-      const confidence =
-        getRadarConfidenceClass(
-          signal.confidence
-        );
+      const confidence=
+        confidenceInfo(signal.confidence);
 
-      const card =
-        document.createElement("div");
+      const card=document.createElement("article");
 
-      card.style.cssText = `
-        background:#ffffff;
-        border:1px solid #e1e7ef;
-        border-radius:14px;
-        padding:17px;
-      `;
+      card.className="signal-card";
 
-      card.innerHTML = `
+      card.innerHTML=`
 
         <div style="
           display:flex;
@@ -3131,91 +2798,144 @@ function createProspectingRadar() {
         ">
 
           <div style="
-            font-size:11px;
-            font-weight:700;
-            color:#667085;
+            font-size:9px;
+            font-weight:850;
+            color:#6c7b86;
+            letter-spacing:.6px;
             text-transform:uppercase;
           ">
             ${escapeHtml(
-              signal.industry ||
+              signal.industry||
               "Territory"
             )}
           </div>
 
-          <span style="
-            background:${confidence.background};
-            color:${confidence.color};
-            padding:5px 8px;
-            border-radius:7px;
-            font-size:9px;
-            font-weight:700;
-          ">
+          <span class="confidence ${confidence.className}"
+            style="
+              padding:5px 8px;
+              border-radius:7px;
+              font-size:9px;
+              font-weight:850;
+            ">
             ${confidence.label}
           </span>
 
         </div>
 
-        <div style="
-          margin-top:9px;
-          font-size:17px;
-          font-weight:700;
-          color:#172033;
-        ">
+        <h3>
           ${escapeHtml(
-            signal.title ||
+            signal.title||
             "Territory signal"
           )}
-        </div>
+        </h3>
 
-        <div style="
-          margin-top:5px;
-          font-size:12px;
-          color:#667085;
-        ">
-          📍
+        <div class="signal-location">
+          <strong>Territory:</strong>
           ${escapeHtml(
-            signal.territory ||
-            "Territory unavailable"
+            signal.territory||
+            "Not specified"
           )}
         </div>
 
         <div style="
           margin-top:12px;
-          font-size:13px;
-          line-height:1.5;
-          color:#475467;
+          font-size:12px;
+          line-height:1.55;
+          color:#475760;
         ">
           ${escapeHtml(
-            signal.summary ||
+            signal.summary||
             "No summary available."
           )}
         </div>
 
+        ${
+          signal.evidence
+            ? `
+              <div style="
+                margin-top:11px;
+                padding:10px;
+                background:#edf7f4;
+                border-radius:9px;
+              ">
+                <strong style="
+                  display:block;
+                  font-size:8px;
+                  color:#087c68;
+                  text-transform:uppercase;
+                ">
+                  Evidence
+                </strong>
+
+                <div style="
+                  margin-top:4px;
+                  font-size:11px;
+                  line-height:1.5;
+                  color:#344550;
+                ">
+                  ${escapeHtml(signal.evidence)}
+                </div>
+              </div>
+            `
+            :""
+        }
+
+        ${
+          signal.inference
+            ? `
+              <div style="
+                margin-top:8px;
+                padding:10px;
+                background:#edf3ff;
+                border-radius:9px;
+              ">
+                <strong style="
+                  display:block;
+                  font-size:8px;
+                  color:#316bd6;
+                  text-transform:uppercase;
+                ">
+                  AI interpretation
+                </strong>
+
+                <div style="
+                  margin-top:4px;
+                  font-size:11px;
+                  line-height:1.5;
+                  color:#344550;
+                ">
+                  ${escapeHtml(signal.inference)}
+                </div>
+              </div>
+            `
+            :""
+        }
+
         <div style="
-          margin-top:12px;
+          margin-top:9px;
           padding:10px;
-          background:#f7f9fc;
+          background:#fff7df;
           border-radius:9px;
         ">
 
-          <div style="
-            font-size:9px;
-            font-weight:700;
-            color:#667085;
+          <strong style="
+            display:block;
+            font-size:8px;
+            color:#8b681e;
             text-transform:uppercase;
-            margin-bottom:4px;
           ">
             Timing
-          </div>
+          </strong>
 
           <div style="
-            font-size:12px;
+            margin-top:4px;
+            font-size:11px;
             line-height:1.45;
-            color:#344054;
+            color:#684f18;
           ">
             ${escapeHtml(
-              signal.timing ||
-              "Timing developing"
+              signal.timing||
+              "Developing"
             )}
           </div>
 
@@ -3225,70 +2945,97 @@ function createProspectingRadar() {
           signal.affected_segment
             ? `
               <div style="
-                margin-top:10px;
-                font-size:12px;
-                color:#475467;
+                margin-top:9px;
+                font-size:11px;
+                color:#475760;
               ">
                 <strong>Affected segment:</strong>
-                ${escapeHtml(
-                  signal.affected_segment
-                )}
+                ${escapeHtml(signal.affected_segment)}
               </div>
             `
-            : ""
+            :""
         }
 
         ${
           signal.potential_needs
             ? `
               <div style="
-                margin-top:8px;
-                font-size:12px;
-                color:#475467;
+                margin-top:6px;
+                font-size:11px;
+                color:#475760;
               ">
                 <strong>Potential needs:</strong>
-                ${escapeHtml(
-                  signal.potential_needs
-                )}
+                ${escapeHtml(signal.potential_needs)}
               </div>
             `
-            : ""
+            :""
+        }
+
+        ${
+          signal.product_connection
+            ? `
+              <div style="
+                margin-top:9px;
+                padding:10px;
+                background:#edf7f4;
+                border-radius:9px;
+              ">
+                <strong style="
+                  display:block;
+                  font-size:8px;
+                  color:#087c68;
+                  text-transform:uppercase;
+                ">
+                  Product connection
+                </strong>
+
+                <div style="
+                  margin-top:4px;
+                  font-size:11px;
+                  line-height:1.5;
+                  color:#245c51;
+                ">
+                  ${escapeHtml(signal.product_connection)}
+                </div>
+              </div>
+            `
+            :""
         }
 
       `;
 
-      territoryGrid.appendChild(card);
+      grid.appendChild(card);
 
     });
 
-    panel.appendChild(territoryGrid);
+    panel.appendChild(grid);
+
   }
 
 
-  // ==========================================================
-  // LOCAL CLUSTER DETECTION
-  // ==========================================================
+  // LOCAL CLUSTER
 
-  if (localSignals.length >= 2) {
+  if(localSignals.length>=2){
 
-    const cluster =
-      document.createElement("div");
+    const cluster=document.createElement("div");
 
-    cluster.style.cssText = `
+    cluster.style.cssText=`
       margin-top:18px;
-      padding:17px;
-      border-radius:13px;
-      background:#fffaf0;
-      border:1px solid #f0dfb1;
+      padding:18px;
+      border-radius:14px;
+      background:
+        linear-gradient(135deg,#fffaf0,#fff);
+      border:1px solid #efdca9;
+      box-shadow:0 5px 18px rgba(139,104,30,.05);
     `;
 
-    cluster.innerHTML = `
+    cluster.innerHTML=`
 
       <div style="
-        font-size:11px;
-        font-weight:700;
+        font-size:9px;
+        font-weight:850;
+        color:#8b681e;
         letter-spacing:.7px;
-        color:#9a6700;
         text-transform:uppercase;
       ">
         Local Cluster Detected
@@ -3296,8 +3043,8 @@ function createProspectingRadar() {
 
       <div style="
         margin-top:5px;
-        font-size:17px;
-        font-weight:700;
+        font-size:18px;
+        font-weight:850;
         color:#684f18;
       ">
         Mmabatho / Mahikeng
@@ -3305,43 +3052,41 @@ function createProspectingRadar() {
 
       <div style="
         margin-top:5px;
-        font-size:13px;
-        line-height:1.5;
+        font-size:12px;
+        line-height:1.55;
         color:#684f18;
       ">
-        Multiple local signals are currently connected
-        to the same territory. This is a territory-level
-        intelligence signal and does not identify specific
-        individuals or confirm future appointments.
+        ${localSignals.length} active local signal(s)
+        currently connect to this territory.
+        This is territory-level intelligence and does
+        not identify individuals or confirm future appointments.
       </div>
 
     `;
 
     panel.appendChild(cluster);
+
   }
 
 
-  // ==========================================================
   // TIMING ENGINE
-  // ==========================================================
 
-  const timing =
-    document.createElement("div");
+  const timing=document.createElement("div");
 
-  timing.style.cssText = `
+  timing.style.cssText=`
     margin-top:18px;
-    padding:17px;
-    background:#f7f9fc;
-    border:1px solid #e1e7ef;
-    border-radius:13px;
+    padding:18px;
+    border-radius:14px;
+    background:#f7fafb;
+    border:1px solid #dfe7eb;
   `;
 
-  timing.innerHTML = `
+  timing.innerHTML=`
 
     <div style="
-      font-size:11px;
-      font-weight:700;
-      color:#667085;
+      font-size:9px;
+      font-weight:850;
+      color:#6c7b86;
       letter-spacing:.7px;
       text-transform:uppercase;
     ">
@@ -3349,95 +3094,48 @@ function createProspectingRadar() {
     </div>
 
     <div style="
-      margin-top:8px;
       display:flex;
       flex-wrap:wrap;
       gap:7px;
+      margin-top:10px;
     ">
 
-      <span style="
-        padding:7px 10px;
-        background:#ffffff;
-        border:1px solid #dfe5ec;
-        border-radius:8px;
-        font-size:11px;
-        font-weight:700;
-        color:#475467;
-      ">
-        1. Detected
-      </span>
+      ${
+        [
+          "1. Detected",
+          "2. Developing",
+          "3. Event",
+          "4. Financial transition",
+          "5. Follow-up",
+          "6. Monitor"
+        ].map((x,i)=>`
 
-      <span style="
-        padding:7px 10px;
-        background:#ffffff;
-        border:1px solid #dfe5ec;
-        border-radius:8px;
-        font-size:11px;
-        font-weight:700;
-        color:#475467;
-      ">
-        2. Developing
-      </span>
+          <span style="
+            padding:7px 10px;
+            border-radius:8px;
+            background:#fff;
+            border:1px solid #dfe7eb;
+            font-size:10px;
+            font-weight:750;
+            color:${i===3?"#087c68":"#475760"};
+          ">
+            ${x}
+          </span>
 
-      <span style="
-        padding:7px 10px;
-        background:#ffffff;
-        border:1px solid #dfe5ec;
-        border-radius:8px;
-        font-size:11px;
-        font-weight:700;
-        color:#475467;
-      ">
-        3. Event
-      </span>
-
-      <span style="
-        padding:7px 10px;
-        background:#ffffff;
-        border:1px solid #dfe5ec;
-        border-radius:8px;
-        font-size:11px;
-        font-weight:700;
-        color:#475467;
-      ">
-        4. Financial transition
-      </span>
-
-      <span style="
-        padding:7px 10px;
-        background:#ffffff;
-        border:1px solid #dfe5ec;
-        border-radius:8px;
-        font-size:11px;
-        font-weight:700;
-        color:#475467;
-      ">
-        5. Follow-up
-      </span>
-
-      <span style="
-        padding:7px 10px;
-        background:#ffffff;
-        border:1px solid #dfe5ec;
-        border-radius:8px;
-        font-size:11px;
-        font-weight:700;
-        color:#475467;
-      ">
-        6. Monitor
-      </span>
+        `).join("")
+      }
 
     </div>
 
     <div style="
-      margin-top:10px;
-      font-size:12px;
+      margin-top:11px;
+      color:#6c7b86;
+      font-size:11px;
       line-height:1.5;
-      color:#667085;
     ">
-      Timing is a planning model. It does not establish that
-      a particular person has been appointed, paid, or is
-      ready to purchase a financial product.
+      Timing is a planning model. It does not establish
+      that a particular person has been appointed, paid,
+      or is ready to purchase a financial product.
     </div>
 
   `;
@@ -3445,103 +3143,90 @@ function createProspectingRadar() {
   panel.appendChild(timing);
 
 
-  // ==========================================================
-  // SIGNAL DEFINITIONS
-  // ==========================================================
+  // DEFINITIONS
 
-  const definitions =
-    document.createElement("div");
+  const definitions=document.createElement("div");
 
-  definitions.style.cssText = `
+  definitions.style.cssText=`
     margin-top:18px;
     padding:15px;
-    border-top:1px solid #eaecf0;
-    color:#667085;
-    font-size:12px;
-    line-height:1.55;
+    border-top:1px solid #e6ecef;
+    color:#6c7b86;
+    font-size:11px;
+    line-height:1.6;
   `;
 
-  definitions.innerHTML = `
+  definitions.innerHTML=`
 
-    <strong style="color:#344054;">
+    <strong style="color:#344550;">
       Radar confidence:
     </strong>
 
     High = recent signal supported by strong evidence.
-
     Moderate = useful signal with some uncertainty.
-
     Early = interesting signal requiring further evidence.
 
     <br><br>
 
-    Radar intelligence is based on territory and segment
-    signals. It should be combined with actual client
-    discovery and verified information before any
-    recommendation is made.
+    Radar intelligence should be combined with actual
+    client discovery and verified information before
+    making any recommendation.
 
   `;
 
   panel.appendChild(definitions);
 
-  console.log(
-    "Live Prospecting Radar rendered:",
-    signals.length,
-    "signals and",
-    territorySignals.length,
-    "territory signals."
-  );
 }
 
 
 // ============================================================
-// HTML SAFETY HELPER
+// REFRESH
 // ============================================================
 
-function escapeHtml(value) {
+async function refreshAdviserOSData(){
 
-  if (
-    value === null ||
-    value === undefined
-  ) {
+  console.log("Adviser OS: refreshing...");
 
-    return "";
-  }
+  await loadAdviser();
+  await loadProspects();
+  await loadProducts();
+  await loadProductIntersections();
+  await loadActivities();
+  await loadAppointments();
+  await loadSales();
+  await loadNews();
+  await loadProspectingSignals();
+  await loadTerritorySignals();
 
-  return String(value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#039;");
+  runOpportunityEngine();
+  updateCommandCentre();
+  updateConnectionDisplay();
+
+  console.log("Adviser OS: refresh complete.");
+
 }
 
 
 // ============================================================
-// SCREEN NAVIGATION
+// NAVIGATION
 // ============================================================
 
-function navigateTo(screenId) {
+function navigateTo(screenId){
 
-  const screen =
-    document.getElementById(screenId);
+  const screen=document.getElementById(screenId);
 
-  if (!screen) {
-
+  if(!screen){
     console.warn(
       "Adviser OS: Screen not found:",
       screenId
     );
-
     return;
   }
 
   document
     .querySelectorAll(".screen")
-    .forEach(item => {
-
+    .forEach(item=>{
       item.classList.remove("active");
-
     });
 
   screen.classList.add("active");
@@ -3550,64 +3235,22 @@ function navigateTo(screenId) {
     top:0,
     behavior:"smooth"
   });
+
 }
 
 
-function newProspect() {
-
+function newProspect(){
   navigateTo("prospects");
 }
 
 
-function clientDiscovery() {
-
-  navigateTo("client-workspace");
+function clientDiscovery(){
+  navigateTo("clients");
 }
 
 
-function productIntelligence() {
-
-  navigateTo("product-intelligence");
-}
-
-
-// ============================================================
-// REFRESH ALL DATA
-// ============================================================
-
-async function refreshAdviserOSData() {
-
-  console.log(
-    "Adviser OS: Refreshing database data..."
-  );
-
-  await loadAdviser();
-
-  await loadProspects();
-
-  await loadProducts();
-
-  await loadProductIntersections();
-
-  await loadActivities();
-
-  await loadAppointments();
-
-  await loadSales();
-
-  await loadNews();
-
-  await loadProspectingSignals();
-
-  await loadTerritorySignals();
-
-  runOpportunityEngine();
-
-  updateCommandCentre();
-
-  console.log(
-    "Adviser OS: Database refresh complete."
-  );
+function productIntelligence(){
+  navigateTo("products");
 }
 
 
@@ -3615,44 +3258,37 @@ async function refreshAdviserOSData() {
 // INITIALISE
 // ============================================================
 
-async function initialiseAdviserOS() {
+async function initialiseAdviserOS(){
 
-  console.log(
-    "Adviser OS initialising..."
-  );
+  console.log("Adviser OS initialising...");
 
   updateCommandCentre();
-
   updateConnectionDisplay();
 
-  const connected =
+  const connected=
     await checkSupabaseConnection();
 
-  if (connected) {
+  if(connected){
 
     await refreshAdviserOSData();
+
   }
 
   updateCommandCentre();
-
   updateConnectionDisplay();
 
-  setTimeout(
-    function () {
+  setTimeout(()=>{
 
-      createNewsIntelligence();
+    createNewsIntelligence();
+    createOpportunityCentre();
+    createProspectingRadar();
 
-      createOpportunityCentre();
-
-      createProspectingRadar();
-
-    },
-    500
-  );
+  },500);
 
   console.log(
     "Adviser OS initialisation complete."
   );
+
 }
 
 
@@ -3660,24 +3296,19 @@ async function initialiseAdviserOS() {
 // AUTOMATIC REFRESH
 // ============================================================
 
-setInterval(
-  async function () {
+setInterval(async()=>{
 
-    if (!AdviserOS.connected) {
-      return;
-    }
+  if(!AdviserOS.connected){
+    return;
+  }
 
-    await refreshAdviserOSData();
+  await refreshAdviserOSData();
 
-    createNewsIntelligence();
+  createNewsIntelligence();
+  createOpportunityCentre();
+  createProspectingRadar();
 
-    createOpportunityCentre();
-
-    createProspectingRadar();
-
-  },
-  60000
-);
+},60000);
 
 
 // ============================================================
@@ -3686,104 +3317,92 @@ setInterval(
 
 document.addEventListener(
   "DOMContentLoaded",
-  function () {
-
+  ()=>{
     initialiseAdviserOS();
-
   }
 );
 
 
 // ============================================================
-// GLOBAL FUNCTIONS
+// GLOBALS
 // ============================================================
 
-window.AdviserOS =
-  AdviserOS;
+window.AdviserOS=AdviserOS;
 
-window.navigateTo =
-  navigateTo;
+window.navigateTo=navigateTo;
+window.newProspect=newProspect;
+window.clientDiscovery=clientDiscovery;
+window.productIntelligence=productIntelligence;
 
-window.newProspect =
-  newProspect;
-
-window.clientDiscovery =
-  clientDiscovery;
-
-window.productIntelligence =
-  productIntelligence;
-
-window.refreshAdviserOSData =
+window.refreshAdviserOSData=
   refreshAdviserOSData;
 
-window.getProductByName =
+window.getProductByName=
   getProductByName;
 
-window.getProductIntersections =
+window.getProductIntersections=
   getProductIntersections;
 
-window.analyseProspectOpportunity =
+window.analyseProspectOpportunity=
   analyseProspectOpportunity;
 
-window.runOpportunityEngine =
+window.runOpportunityEngine=
   runOpportunityEngine;
 
-window.getProspectOpportunities =
+window.getProspectOpportunities=
   getProspectOpportunities;
 
-window.getOpportunitySummary =
+window.getOpportunitySummary=
   getOpportunitySummary;
 
-window.createOpportunityCentre =
+window.createOpportunityCentre=
   createOpportunityCentre;
 
-window.loadNews =
+window.loadNews=
   loadNews;
 
-window.createNewsIntelligence =
+window.createNewsIntelligence=
   createNewsIntelligence;
 
-window.loadProspectingSignals =
+window.loadProspectingSignals=
   loadProspectingSignals;
 
-window.loadTerritorySignals =
+window.loadTerritorySignals=
   loadTerritorySignals;
 
-window.createProspectingRadar =
+window.createProspectingRadar=
   createProspectingRadar;
 
-window.showRadarIntelligence =
+window.showRadarIntelligence=
   showRadarIntelligence;
 
-window.closeRadarIntelligence =
+window.closeRadarIntelligence=
   closeRadarIntelligence;
 
 
 console.log(
-  "Adviser OS app.js loaded successfully."
+  "Adviser OS v5 app.js loaded successfully."
 );
 
 
 // ============================================================
-// CONNECTION STATUS FINAL CHECK
+// FINAL CONNECTION CHECK
 // ============================================================
 
-setTimeout(
-  function () {
+setTimeout(()=>{
 
-    const status =
-      document.getElementById(
-        "connection-status"
-      );
+  const status=
+    document.getElementById(
+      "connection-status"
+    );
 
-    if (status) {
+  if(status){
 
-      status.textContent =
-        AdviserOS.connected
-          ? "● Supabase Connected"
-          : "● Supabase NOT Connected";
-    }
+    status.textContent=
+      AdviserOS.connected
+        ? "● Supabase Connected"
+        : "● Supabase NOT Connected";
 
-  },
-  3000
-);
+  }
+
+},3000);
